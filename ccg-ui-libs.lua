@@ -53,6 +53,7 @@
 		links { "putki-lib" }
 		links { "freetype2" }
 		links { "libpng"}
+		links { "libz"}
 
 	project "ccg-runtime"
 

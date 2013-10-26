@@ -1,6 +1,6 @@
 #include Texture.typedef
 
-AtlasEntry [in, out]
+AtlasEntry [in, out] non-instantiable
 {
 	string id
 	float u0
@@ -9,7 +9,7 @@ AtlasEntry [in, out]
 	float v1
 }
 
-AtlasOutput [in, out]
+AtlasOutput [in, out] non-instantiable
 {
 	int Width
 	int Height

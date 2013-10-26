@@ -1,5 +1,5 @@
 
-TextureOutput [in, out] rtti
+TextureOutput [in, out] rtti non-instantiable
 {
 	float u0
 	float v0
@@ -7,12 +7,12 @@ TextureOutput [in, out] rtti
 	float v1
 }
 
-TextureOutputPng : TextureOutput
+TextureOutputPng : TextureOutput non-instantiable
 {
 	string PngPath
 }
 
-TextureOutputDirectX : TextureOutput
+TextureOutputDirectX : TextureOutput non-instantiable
 {
 	byte[] Bytes
 	int Width

@@ -15,7 +15,7 @@ enum UIHorizontalAlignment
 	UIHorizontalAlignment_Right,
 }
 
-UIRect [in, out]
+UIRect [in, out] no-asset
 {
 	@inline-editor Vec4
 	float x
@@ -24,7 +24,7 @@ UIRect [in, out]
 	float height
 }
 
-UIColor [in, out]
+UIColor [in, out] no-asset
 {
 	@inline-editor Vec4
 	byte r = 255
@@ -33,7 +33,7 @@ UIColor [in, out]
 	byte a = 255
 }
 
-UIBitmapTilingSettings [in, out]
+UIBitmapTilingSettings [in, out] 
 {
 	bool EnableRepeatTiling = false
 	bool UseLayoutScale = false
@@ -41,7 +41,7 @@ UIBitmapTilingSettings [in, out]
 	int TileHeight = 64
 }
 
-UIFill [in, out] rtti
+UIFill [in, out] rtti non-instantiable
 {
 }
 
@@ -91,7 +91,7 @@ UIButtonStyle [in, out]
 	ptr UIFontStyle FontStyle
 }
 
-UIElement [in, out] rtti
+UIElement [in, out] rtti non-instantiable
 {
 	string id
 
@@ -100,7 +100,7 @@ UIElement [in, out] rtti
 	UIColor color
 }
 
-UIElementLayer [in, out]
+UIElementLayer [in, out] no-asset
 {
 	auxptr[] UIElement elements
 }

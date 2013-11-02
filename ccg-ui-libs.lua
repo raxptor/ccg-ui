@@ -6,6 +6,7 @@
 
 	CCGUI_LIB_INCLUDES = { CCGUI_PATH .. "/src/", CCGUI_PATH .. "/_gen" }
 	CCGUI_RT_INCLUDES = { CCGUI_PATH .. "/src/cpp-runtime", CCGUI_PATH .. "/_gen" }
+	CCGUI_LIB_LINKS = { "freetype2", "libpng", "ccg-ui-putki-lib", "ccg-ui-databuilder" }
 
 	project "ccg-ui-putki-lib"
 
@@ -26,7 +27,7 @@
 		includedirs { "_gen" }
 		includedirs { "external/libpng" }
 
-		links {"putki-lib"}
+		links (PUTKI_LIB_LINKS)
 
 	project "ccg-ui-databuilder"
 
@@ -50,10 +51,10 @@
 		files { "src/binpacker/**.*" }
 
 		links { "ccg-ui-putki-lib"}
-		links { "putki-lib" }
 		links { "freetype2" }
 		links { "libpng"}
-		links { "libz"}
+
+		links (PUTKI_LIB_LINKS)		
 
 	project "ccg-runtime"
 

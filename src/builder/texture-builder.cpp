@@ -25,8 +25,8 @@ struct texbuilder : putki::builder::handler_i
 
 		std::cout << "Processing texture [" << path << "] source <" << texture->Source << ">" << std::endl;
 
-		putki::pngutil::loaded_png png;
-		if (putki::pngutil::load(putki::resource::real_path(builder, texture->Source.c_str()).c_str(), &png))
+		ccgui::pngutil::loaded_png png;
+		if (ccgui::pngutil::load(putki::resource::real_path(builder, texture->Source.c_str()).c_str(), &png))
 		{
 			texture->Width = png.width;
 			texture->Height = png.height;
@@ -41,7 +41,7 @@ struct texbuilder : putki::builder::handler_i
 				pngObj->parent.u1 = 1.0f;
 				pngObj->parent.v1 = 1.0f;
 
-				putki::pngutil::write_to_output(builder, pngObj->PngPath.c_str(), png.pixels, png.width, png.height);			
+				ccgui::pngutil::write_to_output(builder, pngObj->PngPath.c_str(), png.pixels, png.width, png.height);			
 
 				texture->Output = &pngObj->parent;
 				
@@ -52,7 +52,7 @@ struct texbuilder : putki::builder::handler_i
 				putki::build_db::add_output(record, path_res.c_str());
 			}
 
-			putki::pngutil::free(&png);
+			ccgui::pngutil::free(&png);
 			return false;
 		}
 

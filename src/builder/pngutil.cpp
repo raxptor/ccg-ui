@@ -11,7 +11,7 @@
 
 #include <string>
 
-namespace putki
+namespace ccgui
 {
 	namespace pngutil
 	{
@@ -119,7 +119,7 @@ namespace putki
 			return wb;
 		}
 
-		std::string write_to_temp(builder::data *builder, const char *path, unsigned int *pixbuf, unsigned int width, unsigned int height)
+		std::string write_to_temp(putki::builder::data *builder, const char *path, unsigned int *pixbuf, unsigned int width, unsigned int height)
 		{
 			std::string outpath;
 			write_buffer wb = write_to_mem(pixbuf, width, height);
@@ -132,7 +132,7 @@ namespace putki
 			return outpath;
 		}
 
-		std::string write_to_output(builder::data *builder, const char *path, unsigned int *pixbuf, unsigned int width, unsigned int height)
+		std::string write_to_output(putki::builder::data *builder, const char *path, unsigned int *pixbuf, unsigned int width, unsigned int height)
 		{
 			std::string outpath;
 			write_buffer wb = write_to_mem(pixbuf, width, height);
@@ -144,7 +144,9 @@ namespace putki
 			return outpath;
 		}
 
-		bool load(const char *path, loaded_png *out)
+
+
+		bool load_internal(const char *path, loaded_png *out, bool header_only)
 		{
 			png_structp png_ptr;
 			png_infop info_ptr;
@@ -182,10 +184,18 @@ namespace putki
 
 			out->width = width;
 			out->height = height;
+			out->bpp = 32;
+
+			if (header_only)
+			{
+				out->pixels = 0;
+				png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+				fclose(fp);
+				return true;
+			}
  
 			unsigned int row_bytes = png_get_rowbytes(png_ptr, info_ptr);
 			out->pixels = (unsigned int *) ::malloc(4 * width * height);
-			out->bpp = 32;
  
 			png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
  			
@@ -211,11 +221,20 @@ namespace putki
  
 			png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
-
  
 			/* Close the file */
 			fclose(fp);
 			return true;
+		}
+
+		bool load_info(const char *path, loaded_png *out)
+		{
+			return load_internal(path, out, true);
+		}
+
+		bool load(const char *path, loaded_png *out)
+		{
+			return load_internal(path, out, false);
 		}
 
 		void free(loaded_png *png)

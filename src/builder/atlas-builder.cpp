@@ -103,7 +103,7 @@ struct atlasbuilder : putki::builder::handler_i
 		inki::Atlas *atlas = (inki::Atlas *) obj;
 		std::cout << "Processing atlas [" << path << "]" << std::endl;
 
-		std::vector<putki::pngutil::loaded_png> loaded;
+		std::vector<ccgui::pngutil::loaded_png> loaded;
 		std::vector<rbp::InputRect> inputRects;
 
 		static unsigned int fakepixel = 0xffff00ff;
@@ -118,8 +118,8 @@ struct atlasbuilder : putki::builder::handler_i
 
 		for (unsigned int i=0;i<atlas->Inputs.size();i++)
 		{
-			putki::pngutil::loaded_png png;
-			if (!putki::pngutil::load(putki::resource::real_path(builder, atlas->Inputs[i]->Source.c_str()).c_str(), &png))
+			ccgui::pngutil::loaded_png png;
+			if (!ccgui::pngutil::load(putki::resource::real_path(builder, atlas->Inputs[i]->Source.c_str()).c_str(), &png))
 			{
 				putki::builder::build_error(builder, "Failed to load png");
 				png.pixels = &fakepixel;
@@ -208,7 +208,7 @@ struct atlasbuilder : putki::builder::handler_i
 
 			for (unsigned int k=0;k<packedRects.size();k++)
 			{
-				putki::pngutil::loaded_png const &g = loaded[packedRects[k].id];
+				ccgui::pngutil::loaded_png const &g = loaded[packedRects[k].id];
 				rbp::Rect const &out = packedRects[k];
 
 				sample_kernel krn;
@@ -234,7 +234,7 @@ struct atlasbuilder : putki::builder::handler_i
 			str << path << "_atlas_" << i;
 
 			std::string output_atlas_path = str.str() + "_atlas.png";
-			output_atlas_path = putki::pngutil::write_to_temp(builder, output_atlas_path.c_str(), outBmp, out_width, out_height);
+			output_atlas_path = ccgui::pngutil::write_to_temp(builder, output_atlas_path.c_str(), outBmp, out_width, out_height);
 
 			{
 				std::string outpath = str.str();

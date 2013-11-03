@@ -1,6 +1,6 @@
 #include Texture.typedef
 
-FontGlyph [in, out]
+FontGlyph [in, out] non-instantiable
 {
 	int glyph
 	int advance
@@ -14,7 +14,7 @@ FontGlyph [in, out]
 	int pixelHeight
 }
 
-FontOutput [in, out]
+FontOutput [in, out] non-instantiable
 {
 	[hidden] ptr Texture OutputTexture
 	[hidden] FontGlyph[] Glyphs

@@ -10,11 +10,7 @@
 
 	project "ccg-ui-putki-lib"
 
-		if os.get() == "windows" then
-			kind "StaticLib"
-		else
-			kind "SharedLib"
-		end
+		kind "StaticLib"
 
 		language "C++"
 		targetname "ccg-ui-putki-lib"
@@ -31,11 +27,7 @@
 
 	project "ccg-ui-databuilder"
 
-		if os.get() == "windows" then
-			kind "StaticLib"
-		else
-			kind "SharedLib"
-		end
+		kind "StaticLib"
 
 		language "C++"
 		targetname "ccg-ui-databuilder"

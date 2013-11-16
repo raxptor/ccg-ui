@@ -2,6 +2,8 @@
 
 #include <outki/types/ccg-ui/Elements.h>
 #include <ccg-ui/ccg-renderer.h>
+#include <ccg-ui/uicontext.h>
+#include <ccg-ui/uiscreen.h>
 
 namespace ccgui
 {
@@ -9,25 +11,17 @@ namespace ccgui
 
 	namespace uielement
 	{
-		struct layoutinfo
-		{
-			float x0, y0, x1, y1;
-		};
+		bool hittest(uiscreen::renderinfo *rinfo, float x, float y, float x0, float y0, float x1, float y1);
 
-		struct renderinfo
-		{
-			ccgui::render_api *backend;
-			ccgui::uiscreen::instance *screen;
-		};
+		bool is_mouseover(uicontext *context, element_id elId);
+		bool is_mousepressed(uicontext *context, element_id elId);
+		
+		void button_logic(uiscreen::renderinfo *rinfo, element_id elId, float x0, float y0, float x1, float y1);
 
-		struct drawinfo
-		{
-			layoutinfo layout;
-			outki::UIElement *element;
-			//
-			// + handler
-		};
-
-		void draw(renderinfo *rinfo, drawinfo *drawinfo);
+		// generic components
+		void draw_fill(uiscreen::renderinfo *rinfo, float x0, float y0, float x1, float y1, outki::UIFill *fill);
+		
+		// element handler
+	//	void draw(uiscreen::renderinfo *rinfo, drawinfo *drawinfo);
 	}
 }

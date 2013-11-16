@@ -3,6 +3,7 @@
 #include <putki/liveupdate/liveupdate.h>
 #include <outki/types/ccg-ui/Elements.h>
 #include <ccg-ui/uielement.h>
+#include <ccg-ui/uiwidget.h>
 #include <vector>
 #include <math.h>
 
@@ -15,58 +16,25 @@ namespace ccgui
 		{
 			outki::UIScreen *data;
 			render_api *backend;
+			uiwidget::instance *root;
 		};
 
-		instance * create(outki::UIScreen *screen, render_api *rapi)
+		instance * create(outki::UIScreen *screen, render_api *rapi, uiwidget::widget_handler *optional_handler)
 		{
 			instance *inst = new instance();
 			inst->backend = rapi;
 			inst->data = screen;
+			inst->root = uiwidget::create(screen->Root, optional_handler);
 			return inst;
 		}
 
 		void free(instance *r)
 		{
+			uiwidget::free(r->root);
 			delete r;
 		}
 
-		void do_widget(instance *d, outki::UIWidget *widget, float x0, float y0, float x1, float y1)
-		{
-			float expx = (x1 - x0) - widget->width;
-			float expy = (y1 - y0) - widget->height;
-			if (expx < 0) expx = 0;
-			if (expy < 0) expy = 0;
-
-			unsigned int layers = widget->layers_size;
-			for (unsigned int i=0;i!=layers;i++)
-			{
-				const outki::UIElementLayer & layer = widget->layers[i];
-				for (unsigned int j=0;j!=layer.elements_size;j++)
-				{
-					LIVE_UPDATE(&layer.elements[j]);
-					outki::UIElement *element = layer.elements[j];
-					if (!element)
-						continue;
-
-					uielement::renderinfo ri;
-					ri.backend = d->backend;
-					ri.screen = d;
-
-					uielement::drawinfo di;
-					di.element = element;
-
-					uielement::layoutinfo& li = di.layout;
-					li.x0 = x0 + element->layout.x + expx * element->expansion.x;
-					li.y0 = y0 + element->layout.y + expy * element->expansion.y;
-					li.x1 = li.x0 + element->layout.width  + expx * element->expansion.width;
-					li.y1 = li.y0 + element->layout.height + expy * element->expansion.height;
-
-					uielement::draw(&ri, &di);
-				}
-			}
-		}
-
-		void draw(instance *d, float x0, float y0, float x1, float y1)
+		void draw(instance *d, uicontext *context, float x0, float y0, float x1, float y1)
 		{
 			LIVE_UPDATE(&d->data);
 			LIVE_UPDATE(&d->data->Root);
@@ -90,7 +58,15 @@ namespace ccgui
 				_y1 = _y0 + h;
 			}
 			
-			do_widget(d, d->data->Root, _x0, _y0, _x1, _y1);
+			uiwidget::layout(d->root, _x0, _y0, _x1, _y1);
+			
+			renderinfo ri;
+			ri.backend = d->backend;
+			ri.screen = d;
+			ri.context = context;
+			
+			uiwidget::update(d->root, &ri);
+			uiwidget::draw(d->root, &ri);
 		}
 
 		bool resolve_texture(instance *d, outki::Texture *texture, resolved_texture * out_resolved, float u0, float v0, float u1, float v1)

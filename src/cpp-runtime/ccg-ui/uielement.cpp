@@ -1,49 +1,58 @@
-#pragma once
-
 #include <outki/types/ccg-ui/Elements.h>
 #include <ccg-ui/ccg-renderer.h>
 #include <ccg-ui/uielement.h>
 #include <ccg-ui/uiscreen.h>
+#include <ccg-ui/uicontext.h>
 #include <putki/liveupdate/liveupdate.h>
 
 #include <stdio.h>
+
 namespace ccgui
 {
 	namespace uielement
 	{
-		void draw(renderinfo *rinfo, drawinfo *drawinfo)
+		void draw_fill(uiscreen::renderinfo *rinfo, float x0, float y0, float x1, float y1, outki::UIFill *fill)
 		{
-			switch (drawinfo->element->rtti_type_ref())
+			if (outki::UIGradientFill *g = fill->exact_cast<outki::UIGradientFill>())
 			{
-				case outki::UIFillElement::TYPE_ID:
-					{		
-						outki::UIFillElement *fill = (outki::UIFillElement *) drawinfo->element;
-						LIVE_UPDATE(&fill->fill);
-			
-						if (outki::UIGradientFill *g = fill->fill->exact_cast<outki::UIGradientFill>())
-						{
-							rinfo->backend->gradient_rect(drawinfo->layout.x0, drawinfo->layout.y0,
-							drawinfo->layout.x1, drawinfo->layout.y1, ccgui::col2int(&g->topleft),
-							ccgui::col2int(&g->topright), ccgui::col2int(&g->bottomleft), ccgui::col2int(&g->bottomright));
-						}
-					}
-					break;
-				case outki::UIWidgetElement::TYPE_ID:
-					break;
-				case outki::UIBitmapElement::TYPE_ID:
-					{
-						outki::UIBitmapElement *bmp = (outki::UIBitmapElement *) drawinfo->element;
-
-						uiscreen::resolved_texture rt;
-						if (uiscreen::resolve_texture(rinfo->screen, bmp->texture, &rt, 0, 0, 1, 1))
-						{
-							rinfo->backend->tex_rect(rt.texture, drawinfo->layout.x0, drawinfo->layout.y0, drawinfo->layout.x1, drawinfo->layout.y1, 
-							                         rt.u0, rt.v0, rt.u1, rt.v1, 0xffffffff);
-						}
-					}
-					break;
-				default:
-					break;
+				rinfo->backend->gradient_rect(x0, y0, x1, y1, ccgui::col2int(&g->topleft),
+				ccgui::col2int(&g->topright), ccgui::col2int(&g->bottomleft), ccgui::col2int(&g->bottomright));
+			}
+		}
+		
+		bool hittest(uiscreen::renderinfo *rinfo, float x, float y, float x0, float y0, float x1, float y1)
+		{
+			return x >= x0 && y >= y0 && x < x1 && y < y1;
+		}
+		
+		bool mousehittest(uiscreen::renderinfo *rinfo, float x0, float y0, float x1, float y1)
+		{
+			return hittest(rinfo, rinfo->context->input.mouse->x, rinfo->context->input.mouse->y,
+			               x0, y0, x1, y1);
+		}
+		
+		bool is_mouseover(uicontext *context, element_id elId)
+		{
+			return context->mouseover == elId;
+		}
+		
+		bool is_mousepressed(uicontext *context, element_id elId)
+		{
+			return context->mousedown == elId;
+		}
+		
+		void button_logic(uiscreen::renderinfo *rinfo, element_id elId, float x0, float y0, float x1, float y1)
+		{
+			if (mousehittest(rinfo, x0, y0, x1, y1))
+			{
+				// check if mouse was released.
+				rinfo->context->mouseover = elId;
+			}
+			else if (rinfo->context->mouseover == elId)
+			{
+				// if button released
+				if (rinfo->context->mousedown != elId)
+					rinfo->context->mouseover = 0;
 			}
 		}
 	}

@@ -1,5 +1,3 @@
-#pragma once
-
 #include "uiscreen.h"
 
 #include <putki/liveupdate/liveupdate.h>
@@ -90,8 +88,6 @@ namespace ccgui
 				_y0 = floorf((y0 + y1 - h) / 2.0f);
 				_x1 = _x0 + w;
 				_y1 = _y0 + h;
-				
-				printf("Preserving! %f %f %f %f\n", _x0, _y0, _x1, _y1);
 			}
 			
 			do_widget(d, d->data->Root, _x0, _y0, _x1, _y1);

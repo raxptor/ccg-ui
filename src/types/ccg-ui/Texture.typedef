@@ -12,7 +12,7 @@ TextureOutputPng : TextureOutput non-instantiable
 	string PngPath
 }
 
-TextureOutputDirectX : TextureOutput non-instantiable
+TextureOutputOpenGL : TextureOutput non-instantiable
 {
 	byte[] Bytes
 	int Width

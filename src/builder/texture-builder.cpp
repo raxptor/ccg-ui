@@ -33,23 +33,48 @@ struct texbuilder : putki::builder::handler_i
 
 			if (!texture->NoOutput)
 			{
-				// these are the direct load textures.
-				inki::TextureOutputPng *pngObj = inki::TextureOutputPng::alloc();
-				pngObj->PngPath = std::string("Resources/") + path + ".png";
-				pngObj->parent.u0 = 0;
-				pngObj->parent.v0 = 0;
-				pngObj->parent.u1 = 1.0f;
-				pngObj->parent.v1 = 1.0f;
+				if (putki::builder::runtime(builder)->platform == putki::runtime::PLATFORM_MACOSX)
+				{
+					inki::TextureOutputOpenGL *glTex = inki::TextureOutputOpenGL::alloc();
+					glTex->Width = png.width;
+					glTex->Height = png.height;
+					
+					// RGBA
+					for (int i=0;i<png.width * png.height;i++)
+					{
+						// RGBA
+						glTex->Bytes.push_back((png.pixels[i] >> 16) & 0xff);
+						glTex->Bytes.push_back((png.pixels[i] >>  8) & 0xff);
+						glTex->Bytes.push_back((png.pixels[i] >>  0) & 0xff);
+						glTex->Bytes.push_back((png.pixels[i] >> 24) & 0xff);
+					}
+					texture->Output = &glTex->parent;
+					
+					std::string path_res(path);
+					path_res.append("_out");
+					putki::db::insert(output, path_res.c_str(), inki::TextureOutputOpenGL::th(), glTex);
+					putki::build_db::add_output(record, path_res.c_str());
+				}
+				else
+				{
+					// these are the direct load textures.
+					inki::TextureOutputPng *pngObj = inki::TextureOutputPng::alloc();
+					pngObj->PngPath = std::string("Resources/") + path + ".png";
+					pngObj->parent.u0 = 0;
+					pngObj->parent.v0 = 0;
+					pngObj->parent.u1 = 1.0f;
+					pngObj->parent.v1 = 1.0f;
 
-				ccgui::pngutil::write_to_output(builder, pngObj->PngPath.c_str(), png.pixels, png.width, png.height);			
+					ccgui::pngutil::write_to_output(builder, pngObj->PngPath.c_str(), png.pixels, png.width, png.height);			
 
-				texture->Output = &pngObj->parent;
-				
-				std::string path_res(path);
-				path_res.append("_out");
-				putki::db::insert(output, path_res.c_str(), inki::TextureOutputPng::th(), pngObj);
+					texture->Output = &pngObj->parent;
+					
+					std::string path_res(path);
+					path_res.append("_out");
+					putki::db::insert(output, path_res.c_str(), inki::TextureOutputPng::th(), pngObj);
 
-				putki::build_db::add_output(record, path_res.c_str());
+					putki::build_db::add_output(record, path_res.c_str());
+				}
 			}
 
 			ccgui::pngutil::free(&png);

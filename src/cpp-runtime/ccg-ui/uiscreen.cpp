@@ -6,6 +6,7 @@
 #include <outki/types/ccg-ui/Elements.h>
 #include <ccg-ui/uielement.h>
 #include <vector>
+#include <math.h>
 
 namespace ccgui
 {
@@ -57,8 +58,8 @@ namespace ccgui
 					di.element = element;
 
 					uielement::layoutinfo& li = di.layout;
-					li.x0 = element->layout.x + expx * element->expansion.x;
-					li.y0 = element->layout.y + expy * element->expansion.y;
+					li.x0 = x0 + element->layout.x + expx * element->expansion.x;
+					li.y0 = y0 + element->layout.y + expy * element->expansion.y;
 					li.x1 = li.x0 + element->layout.width  + expx * element->expansion.width;
 					li.y1 = li.y0 + element->layout.height + expy * element->expansion.height;
 
@@ -72,7 +73,28 @@ namespace ccgui
 			LIVE_UPDATE(&d->data);
 			LIVE_UPDATE(&d->data->Root);
 
-			do_widget(d, d->data->Root, x0, y0, x1, y1);
+			float _x0 = x0;
+			float _y0 = y0;
+			float _x1 = x1;
+			float _y1 = y1;
+
+			if (d->data->Config->PreserveLayoutAspect)
+			{
+				const float xs = (x1 - x0) / d->data->Root->width;
+				const float ys = (y1 - y0) / d->data->Root->height;
+				const float s = xs < ys ? xs : ys;
+				const float w = s * d->data->Root->width;
+				const float h = s * d->data->Root->height;
+				
+				_x0 = floorf((x0 + x1 - w) / 2.0f);
+				_y0 = floorf((y0 + y1 - h) / 2.0f);
+				_x1 = _x0 + w;
+				_y1 = _y0 + h;
+				
+				printf("Preserving! %f %f %f %f\n", _x0, _y0, _x1, _y1);
+			}
+			
+			do_widget(d, d->data->Root, _x0, _y0, _x1, _y1);
 		}
 
 		bool resolve_texture(instance *d, outki::Texture *texture, resolved_texture * out_resolved, float u0, float v0, float u1, float v1)

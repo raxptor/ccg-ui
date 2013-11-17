@@ -6,7 +6,7 @@
 
 	CCGUI_LIB_INCLUDES = { CCGUI_PATH .. "/src/", CCGUI_PATH .. "/_gen" }
 	CCGUI_RT_INCLUDES = { CCGUI_PATH .. "/src/cpp-runtime", CCGUI_PATH .. "/_gen" }
-	CCGUI_LIB_LINKS = { "freetype2", "libccgpng", "ccg-ui-putki-lib", "ccg-ui-databuilder" }
+	CCGUI_LIB_LINKS = { "ccg-ui-databuilder", "ccg-ui-putki-lib", "freetype2", "libccgpng" }
 
 	project "ccg-ui-putki-lib"
 

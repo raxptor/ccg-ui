@@ -6,6 +6,7 @@
 #include <ccg-ui/uiwidget.h>
 #include <vector>
 #include <math.h>
+#include <string.h>
 
 namespace ccgui
 {

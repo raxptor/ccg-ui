@@ -1,9 +1,9 @@
 
 
-	project "libpng"
+	project "libccgpng"
 		kind "StaticLib"
 		language "c"
-		targetname "libpng"
+		targetname "libccgpng"
 		files { "*.c", "*.h" }
 		excludes { "example.c" }
 		includedirs (ZLIB_INCLUDES)

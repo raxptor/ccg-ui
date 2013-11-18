@@ -248,6 +248,11 @@ struct atlasbuilder : putki::builder::handler_i
 				ao.Texture = texture;
 				atlas->Outputs.push_back(ao);
 			}
+			
+			for (unsigned int i=0;i!=loaded.size();i++)
+			        ccgui::pngutil::free(&loaded[i]);
+			
+			delete [] outBmp;
 		}
 
 		return false;

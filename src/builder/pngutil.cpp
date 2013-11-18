@@ -239,7 +239,7 @@ namespace ccgui
 
 		void free(loaded_png *png)
 		{
-
+			::free(png->pixels);
 		}
 	}
 }

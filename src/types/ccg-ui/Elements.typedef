@@ -100,6 +100,11 @@ UIElement [in, out] rtti non-instantiable
 	UIColor color
 }
 
+UICustomElement : UIElement [in, out]
+{
+
+}
+
 UIElementLayer [in, out] no-asset
 {
 	auxptr[] UIElement elements

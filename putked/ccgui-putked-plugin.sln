@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ccgui-putked-plugin", "ccgui-putked-plugin\ccgui-putked-plugin.csproj", "{7002CF71-62EA-463B-B48B-DC71EBFD2CA0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "putked", "..\..\putked\putked\putked.csproj", "{168A9417-EB78-4C88-B52F-A5BC0D5C0D61}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "putked", "..\..\putki\putked\putked\putked.csproj", "{168A9417-EB78-4C88-B52F-A5BC0D5C0D61}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "putki-lib", "..\..\putked\putki-lib\putki-lib.csproj", "{72E9BCF0-B1DA-4789-A676-C2ABAB38FCDD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "putki-lib", "..\..\putki\putked\putki-lib\putki-lib.csproj", "{72E9BCF0-B1DA-4789-A676-C2ABAB38FCDD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,8 +1,10 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="../../../unity-proj/Assets/Scripts/CCG-UI/UIFill.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="../../../unity-proj/Assets/Scripts/CCG-UI/UIWidgetRenderer.cs">
     <Files>
-      <File FileName="../../../unity-proj/Assets/Scripts/CCG-UI/UIFill.cs" Line="25" Column="4" />
+      <File FileName="../../../unity-proj/Assets/Scripts/CCG-UI/UIFill.cs" Line="25" Column="95" />
+      <File FileName="../../../unity-proj/Assets/Scripts/PUTKI-RT/LiveUpdateClient.cs" Line="1" Column="1" />
+      <File FileName="../../../unity-proj/Assets/Scripts/CCG-UI/UIWidgetRenderer.cs" Line="92" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

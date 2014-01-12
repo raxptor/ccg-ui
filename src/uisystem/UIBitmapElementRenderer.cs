@@ -2,8 +2,8 @@ namespace CCGUI
 {
 	class UIBitmapElementRenderer : UIElementRenderer
 	{
-		outki.UIBitmapElement m_element;
-		UIRenderer.Texture m_texture;
+		public outki.UIBitmapElement m_element;
+		public UIRenderer.Texture m_texture;
 
 		public UIBitmapElementRenderer(outki.UIBitmapElement element)
 		{

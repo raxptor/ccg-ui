@@ -115,19 +115,24 @@ public class UIRenderer
 	{
 		DrawTextureUV(tex, x0, y0, x1, y1, tex.u0, tex.v0, tex.u1, tex.v1);
 	}
-		
-	public static void DrawTextureUV(Texture tex, float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1)
-	{		
+
+	public static void UseTexture(Texture tex)
+	{
 		if (tex.ld != lastTexture || begin == 0)
 		{
 			if (begin != 0)
 				GL.End();
-			
+
 			lastTexture = tex.ld;
 			lastTexture.material.SetPass(0);
 			GL.Begin(GL.QUADS);
 			begin = 1;
 		}
+	}
+		
+	public static void DrawTextureUV(Texture tex, float x0, float y0, float x1, float y1, float u0, float v0, float u1, float v1)
+	{		
+		UseTexture(tex);
 		
 		GL.Color(new Color(m_currentColor.r, m_currentColor.g, m_currentColor.b, m_currentColor.a));
 		GL.TexCoord2(u0, 1 - v0);
@@ -139,7 +144,25 @@ public class UIRenderer
 		GL.TexCoord2(u0, 1 - v1);
 		GL.Vertex3(x0, y1, 0);
 	}
-	
+
+	public static void DrawTriangleUV(Texture tex, float x0, float y0, float x1, float y1, float x2, float y2, float u0, float v0, float u1, float v1, float u2, float v2)
+	{		
+		UseTexture(tex);
+
+		GL.Color(new Color(m_currentColor.r, m_currentColor.g, m_currentColor.b, m_currentColor.a));
+		GL.TexCoord2(u0, 1 - v0);
+		GL.Vertex3(x0, y0, 0);
+
+		GL.TexCoord2(u1, 1 - v1);
+		GL.Vertex3(x1, y1, 0);
+
+		GL.TexCoord2(u2, 1 - v2);
+		GL.Vertex3(x2, y2, 0);
+
+		// hack
+		GL.Vertex3(x2, y2, 0);
+	}
+
 	public static void DrawSolidRect(float x0, float y0, float x1, float y1, outki.UIColor col = null)
 	{
 		if (lastTexture != null || begin == 0)

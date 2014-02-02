@@ -29,6 +29,7 @@ FontOutput [in, out] non-instantiable
 Font [in, out]
 {
 	file Source
+	bool Latin1 = true
 	[no-out] int[] Characters
 	[no-out] int[] PixelSizes
 	[hidden] FontOutput[] Outputs

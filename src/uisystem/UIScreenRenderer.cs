@@ -18,6 +18,11 @@ namespace CCGUI
 		UITextureManager m_textureManager;
 		UIWidgetHandler m_widgetHandler;
 
+		public UITextureManager GetTextureManager()
+		{
+			return m_textureManager;
+		}
+
 		public UIScreenRenderer(outki.UIScreen screen, UIWidgetHandler handler)
 		{
 			m_screen = screen;

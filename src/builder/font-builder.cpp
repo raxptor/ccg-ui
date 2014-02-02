@@ -36,11 +36,19 @@ struct fontbuilder : putki::builder::handler_i
 
 		std::cout << "Building font [" << path << "] with source [" << font->Source << "]" << std::endl;
 
-		for (int i='a';i<'z';i++)
-			font->Characters.push_back(i);
-		for (int i='A';i<'Z';i++)
-			font->Characters.push_back(i);
-
+		if (font->Latin1)
+		{
+			for (int i='a';i<='z';i++)
+				font->Characters.push_back(i);
+			for (int i='A';i<='Z';i++)
+				font->Characters.push_back(i);
+			for (int i='0';i<='9';i++)
+				font->Characters.push_back(i);
+			
+			const char *special = "!()#?:/\\<>[] ";
+			for (int i=0;i<strlen(special);i++)
+				font->Characters.push_back(special[i]);
+		}
 
 		const char *fnt_data;
 		long long fnt_len;
@@ -80,7 +88,7 @@ struct fontbuilder : putki::builder::handler_i
 				up.BBoxMinY = 1000000;
 				up.BBoxMaxY = -100000;
 
-				int border = 1;
+				int border = 2;
 
 				for (unsigned int i=0;i<font->Characters.size();i++)
 				{
@@ -173,7 +181,8 @@ struct fontbuilder : putki::builder::handler_i
 				{
 					for (int x=0;x	<out_width;x++)
 					{
-						outBmp[y*out_width+x] = (x^y) & 1 ? 0xff101010 : 0xff808080;
+						// outBmp[y*out_width+x] = (x^y) & 1 ? 0xff101010 : 0xff808080;
+						outBmp[y*out_width+x] = 0x00ffffff;
 					}
 				}
 

@@ -118,26 +118,32 @@ struct atlasbuilder : putki::builder::handler_i
 
 		for (unsigned int i=0;i<atlas->Inputs.size();i++)
 		{
+			if (!atlas->Inputs[i])
+			{
+				std::cout << "*** Blank entry in atlas at slot " << i << std::endl;
+				continue;
+			}
+			
 			ccgui::pngutil::loaded_png png;
 			if (!ccgui::pngutil::load(putki::resource::real_path(builder, atlas->Inputs[i]->Source.c_str()).c_str(), &png))
 			{
 				putki::builder::build_error(builder, "Failed to load png");
-				png.pixels = &fakepixel;
-				png.width = 1;
-				png.height = 1;
 			}
+			else
+			{
+				loaded.push_back(png);
 
-			rbp::InputRect ir;
-			ir.width = png.width;
-			ir.height = png.height;
-			ir.id = loaded.size();
-			inputRects.push_back(ir);
+				rbp::InputRect ir;
+				ir.width = png.width;
+				ir.height = png.height;
+				ir.id = loaded.size() - 1;
+				inputRects.push_back(ir);
 
-			if (ir.width > max_width) max_width = ir.width;
-			if (ir.height > max_height) max_height = ir.height;
+				if (ir.width > max_width) max_width = ir.width;
+				if (ir.height > max_height) max_height = ir.height;
 
-			loaded.push_back(png);
-			std::cout << "      " << atlas->Inputs[i] << " loaded [" << png.width << "x" << png.height << "]" << std::endl;
+				std::cout << "      " << atlas->Inputs[i]->Source.c_str() << " loaded [" << png.width << "x" << png.height << "]" << std::endl;
+			}
 		}
 		
 
@@ -206,6 +212,8 @@ struct atlasbuilder : putki::builder::handler_i
 			ao.Height = out_height;
 			ao.Scale = g_outputTexConf[i].scale;
 
+			std::cout << "Packing into " << out_width << "x" << out_height << std::endl;
+			
 			for (unsigned int k=0;k<packedRects.size();k++)
 			{
 				ccgui::pngutil::loaded_png const &g = loaded[packedRects[k].id];
@@ -213,6 +221,8 @@ struct atlasbuilder : putki::builder::handler_i
 
 				sample_kernel krn;
 				make_sample_kernel(&krn, scaleConfig.scale);
+				
+				std::cout << "[atlas] writing [" << out.width << "x" << out.height << ") into pos (" << out.x << "x" << out.y << ")" << std::endl;
 				
 				for (int y=0;y<out.height;y++)
 				{
@@ -250,7 +260,10 @@ struct atlasbuilder : putki::builder::handler_i
 			}
 			
 			for (unsigned int i=0;i!=loaded.size();i++)
-			        ccgui::pngutil::free(&loaded[i]);
+			{
+				std::cout << "Freeing image [" << i << "] " << std::endl;
+				ccgui::pngutil::free(&loaded[i]);
+			}
 			
 			delete [] outBmp;
 		}

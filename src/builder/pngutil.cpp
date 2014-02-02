@@ -196,6 +196,7 @@ namespace ccgui
  
 			unsigned int row_bytes = png_get_rowbytes(png_ptr, info_ptr);
 			out->pixels = (unsigned int *) ::malloc(4 * width * height);
+			std::cout << "[pngutil] malloc(" << 4 * width * height << ") => " << out->pixels << std::endl;
  
 			png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
  			
@@ -239,6 +240,7 @@ namespace ccgui
 
 		void free(loaded_png *png)
 		{
+			std::cout << "[pngutil] free(" << png->pixels << ")" << std::endl;
 			::free(png->pixels);
 		}
 	}

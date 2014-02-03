@@ -20,6 +20,7 @@ namespace CCGUI
 		
 		public bool StillInside;
 		public int PressedByTouchId;
+		public UnityEngine.Vector3 PressedLocation;
 	}
 
 	public class UIInputState
@@ -80,6 +81,9 @@ namespace CCGUI
 			{
 				if (t.position.x >= x0 && t.position.y >= y0 && t.position.x < x1 && t.position.y < y1)
 				{
+					if (interaction.PressedByTouchId == -1)
+						interaction.PressedLocation = t.position;
+
 					interaction.PressedByTouchId = t.fingerId;
 					interaction.StillInside = true;
 					return;

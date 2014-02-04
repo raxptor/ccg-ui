@@ -75,19 +75,28 @@ public class UIRenderer
 					return lt;
 				}
 			}
-			
-			TextAsset ta = Resources.Load(png.PngPath.Replace("Resources/",""), typeof(TextAsset)) as TextAsset;
-			if (ta == null)
-			{
-				UnityEngine.Debug.LogError("Failed to load texture [" + png.PngPath + "]");
-				return null;
-			}
 
 			LoadedTexture ld = new LoadedTexture();
-			ld.unityTexture = new Texture2D (4, 4);
-			ld.unityTexture.LoadImage(ta.bytes);
-			ld.unityTexture.filterMode = FilterMode.Bilinear;
-			ld.unityTexture.anisoLevel = 0;
+
+			TextAsset ta = Resources.Load(png.PngPath.Replace("Resources/",""), typeof(TextAsset)) as TextAsset;
+			if (ta != null)
+			{
+				ld.unityTexture = new Texture2D (4, 4);
+				ld.unityTexture.LoadImage(ta.bytes);
+				ld.unityTexture.filterMode = FilterMode.Bilinear;
+				ld.unityTexture.anisoLevel = 0;
+			}
+			else
+			{
+				// Try loading texture asset
+				ld.unityTexture = Resources.Load(png.PngPath.Replace("Resources/","").Replace(".png", "")) as Texture2D;
+				if (ld.unityTexture == null)
+				{
+					UnityEngine.Debug.LogError("Failed to load texture [" + png.PngPath + "]");
+					return null;
+				}
+			}
+
 			ld.material = new Material(TexturedShader);
 			ld.material.mainTexture = ld.unityTexture;
 			ld.path = png.PngPath;

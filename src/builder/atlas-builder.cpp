@@ -212,7 +212,7 @@ struct atlasbuilder : putki::builder::handler_i
 			ao.Height = out_height;
 			ao.Scale = g_outputTexConf[i].scale;
 
-			std::cout << "Packing into " << out_width << "x" << out_height << std::endl;
+			std::cout << "[atlas-builder] Packing into " << out_width << "x" << out_height << std::endl;
 			
 			for (unsigned int k=0;k<packedRects.size();k++)
 			{
@@ -221,8 +221,6 @@ struct atlasbuilder : putki::builder::handler_i
 
 				sample_kernel krn;
 				make_sample_kernel(&krn, scaleConfig.scale);
-				
-				std::cout << "[atlas] writing [" << out.width << "x" << out.height << ") into pos (" << out.x << "x" << out.y << ")" << std::endl;
 				
 				for (int y=0;y<out.height;y++)
 				{
@@ -261,10 +259,7 @@ struct atlasbuilder : putki::builder::handler_i
 			}
 			
 			for (unsigned int i=0;i!=loaded.size();i++)
-			{
-				std::cout << "Freeing image [" << i << "] " << std::endl;
 				ccgui::pngutil::free(&loaded[i]);
-			}
 			
 			delete [] outBmp;
 		}

@@ -21,9 +21,36 @@ TextureOutputOpenGL : TextureOutput non-instantiable
 
 enum TextureResizeMode
 {
-	RESIZE_NONE,
-	RESIZE_POW2,
-	RESIZE_POW2SQUARE
+	RESIZE_NONE
+}
+
+TextureOutputFormat rtti non-instantiable
+{
+
+}
+
+TextureOutputFormatPng : TextureOutputFormat
+{
+
+}
+
+TextureOutputFormatJpeg : TextureOutputFormat
+{
+	int does_not_work
+}
+
+TextureOutputFormatOpenGL : TextureOutputFormat
+{
+	int needs_refactoring
+}
+
+TextureConfiguration [in, out] rtti
+{
+	enum TextureResizeMode ResizeMode = RESIZE_NONE
+	auxptr TextureOutputFormat OutputFormat
+	auxptr TextureOutputFormat OutputFormatCSharp
+	auxptr TextureOutputFormat OutputFormatMacOSX
+	auxptr TextureOutputFormat OutputFormatWindows
 }
 
 Texture [in, out] rtti
@@ -31,9 +58,7 @@ Texture [in, out] rtti
 	[no-out] file Source
 	[hidden] ptr TextureOutput Output
 	[hidden] string id
-	[no-out] bool NoOutput
-	[no-out] bool PathOnlyPng
-	[no-out] enum TextureResizeMode ResizeMode = RESIZE_NONE
+	[no-out] ptr TextureConfiguration Configuration
 	[hidden] int Width
 	[hidden] int Height
 }

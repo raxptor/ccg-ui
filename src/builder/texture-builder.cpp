@@ -16,6 +16,7 @@
 
 struct texbuilder : putki::builder::handler_i
 {
+	/* no support yet
 	static void resize(inki::TextureResizeMode mode, int width, int height, int *out_width, int *out_height)
 	{
 		if (mode == inki::RESIZE_NONE)
@@ -39,6 +40,7 @@ struct texbuilder : putki::builder::handler_i
 				*out_width = *out_height;
 		}	
 	}
+	*/
 
 	virtual bool handle(putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj, putki::db::data *output, int obj_phase)
 	{
@@ -48,104 +50,101 @@ struct texbuilder : putki::builder::handler_i
 		texture->id = path;
 
 		std::cout << "Processing texture [" << path << "] source <" << texture->Source << ">" << std::endl;
+
+		// this object supplies its own defaults on initialisation		
+		inki::TextureConfiguration config;
+		if (texture->Configuration)
+			config = *texture->Configuration;
 		
-		if (texture->PathOnlyPng)
+		// First load the information for the texture and fill in width & height
+		ccgui::pngutil::loaded_png pnginfo;
+		if (ccgui::pngutil::load_info(putki::resource::real_path(builder, texture->Source.c_str()).c_str(), &pnginfo))
 		{
-			ccgui::pngutil::loaded_png pnginfo;
-			if (ccgui::pngutil::load_info(putki::resource::real_path(builder, texture->Source.c_str()).c_str(), &pnginfo))
+			texture->Width = pnginfo.width;
+			texture->Height = pnginfo.height;
+			ccgui::pngutil::free(&pnginfo);	
+		}
+		else
+		{
+			putki::builder::build_error(builder, "Could not load source file!");
+			return false;
+		}
+		
+		// If no output is needed
+		if (!config.OutputFormat)
+		{
+			std::cout << " => Texture has no output format set. Skipping generation" << std::endl;
+			return false;
+		}
+		
+		// load 
+		ccgui::pngutil::loaded_png png;
+		if (!ccgui::pngutil::load(putki::resource::real_path(builder, texture->Source.c_str()).c_str(), &png))
+		{
+			putki::builder::build_error(builder, "Failed to load source file!");
+			return false;
+		}
+		
+		// TODO: Check overrides for other platforms
+		inki::TextureOutputFormat *outputFormat = config.OutputFormat;
+		
+		if (outputFormat->rtti_type_ref() == inki::TextureOutputFormatOpenGL::type_id())
+		{
+			inki::TextureOutputOpenGL *glTex = inki::TextureOutputOpenGL::alloc();
+			glTex->Width = png.width;
+			glTex->Height = png.height;
+			
+			// RGBA
+			for (int i=0;i<png.width * png.height;i++)
 			{
-				resize(texture->ResizeMode, pnginfo.width, pnginfo.height, &texture->Width, &texture->Height);
-				
-				inki::TextureOutputPng *pngObj = inki::TextureOutputPng::alloc();
-				pngObj->PngPath = std::string("Resources/") + path + ".png";
-				pngObj->parent.u0 = 0;
-				pngObj->parent.v0 = 0;
-				pngObj->parent.u1 = float(pnginfo.width) / float(texture->Width);
-				pngObj->parent.v1 = float(pnginfo.height) / float(texture->Height);
-				texture->Output = &pngObj->parent;
-							
-				std::string path_res(path);
-				path_res.append("_out");
-				putki::db::insert(output, path_res.c_str(), inki::TextureOutputPng::th(), pngObj);
-				putki::build_db::add_output(record, path_res.c_str());
-				return false;
+				// RGBA
+				glTex->Bytes.push_back((png.pixels[i] >> 16) & 0xff);
+				glTex->Bytes.push_back((png.pixels[i] >>  8) & 0xff);
+				glTex->Bytes.push_back((png.pixels[i] >>  0) & 0xff);
+				glTex->Bytes.push_back((png.pixels[i] >> 24) & 0xff);
 			}
-			else
+			texture->Output = &glTex->parent;
+			
+			std::string path_res(path);
+			path_res.append("_out");
+			putki::db::insert(output, path_res.c_str(), inki::TextureOutputOpenGL::th(), glTex);
+			putki::build_db::add_output(record, path_res.c_str());
+		}
+		else if (outputFormat->rtti_type_ref() == inki::TextureOutputFormatPng::type_id())
+		{
+			// these are the direct load textures.
+			inki::TextureOutputPng *pngObj = inki::TextureOutputPng::alloc();
+			pngObj->PngPath = std::string("Resources/") + path + ".png";
+			pngObj->parent.u0 = 0;
+			pngObj->parent.v0 = 0;
+			pngObj->parent.u1 = float(png.width) / float(texture->Width);
+			pngObj->parent.v1 = float(png.height) / float(texture->Height);
+			
+			unsigned int *pixels_out = new unsigned int[texture->Width * texture->Height];
+			memset(pixels_out, 0x00, texture->Width * texture->Height * sizeof(unsigned int));
+			
+			for (int y=0;y<png.height;y++)
 			{
-				
+				unsigned int *dst_start = &pixels_out[y * texture->Width];
+				unsigned int *src_start = ((unsigned int*)png.pixels) + (y * png.width);
+				memcpy(dst_start, src_start, png.width * sizeof(unsigned int));
 			}
 			
-			return false;
+			std::cout << "[TextureOutputFormatPng] - Source image [" << png.width << "x" << png.height << "] => [" << texture->Width << "x" << texture->Height << "]" << std::endl;
+		
+			ccgui::pngutil::write_to_output(builder, pngObj->PngPath.c_str(), pixels_out, texture->Width, texture->Height);
+			delete [] pixels_out;
+
+			texture->Output = &pngObj->parent;
+			
+			std::string path_res(path);
+			path_res.append("_out");
+			putki::db::insert(output, path_res.c_str(), inki::TextureOutputPng::th(), pngObj);
+
+			putki::build_db::add_output(record, path_res.c_str());
 		}
 
-		ccgui::pngutil::loaded_png png;
-		if (ccgui::pngutil::load(putki::resource::real_path(builder, texture->Source.c_str()).c_str(), &png))
-		{
-			resize(texture->ResizeMode, png.width, png.height, &texture->Width, &texture->Height);
-
-			if (!texture->NoOutput)
-			{
-				if (putki::builder::runtime(builder)->platform == putki::runtime::PLATFORM_MACOSX)
-				{
-					inki::TextureOutputOpenGL *glTex = inki::TextureOutputOpenGL::alloc();
-					glTex->Width = png.width;
-					glTex->Height = png.height;
-					
-					// RGBA
-					for (int i=0;i<png.width * png.height;i++)
-					{
-						// RGBA
-						glTex->Bytes.push_back((png.pixels[i] >> 16) & 0xff);
-						glTex->Bytes.push_back((png.pixels[i] >>  8) & 0xff);
-						glTex->Bytes.push_back((png.pixels[i] >>  0) & 0xff);
-						glTex->Bytes.push_back((png.pixels[i] >> 24) & 0xff);
-					}
-					texture->Output = &glTex->parent;
-					
-					std::string path_res(path);
-					path_res.append("_out");
-					putki::db::insert(output, path_res.c_str(), inki::TextureOutputOpenGL::th(), glTex);
-					putki::build_db::add_output(record, path_res.c_str());
-				}
-				else
-				{
-					// these are the direct load textures.
-					inki::TextureOutputPng *pngObj = inki::TextureOutputPng::alloc();
-					pngObj->PngPath = std::string("Resources/") + path + ".png";
-					pngObj->parent.u0 = 0;
-					pngObj->parent.v0 = 0;
-					pngObj->parent.u1 = float(png.width) / float(texture->Width);
-					pngObj->parent.v1 = float(png.height) / float(texture->Height);
-					
-					unsigned int *pixels_out = new unsigned int[texture->Width * texture->Height];
-					memset(pixels_out, 0x00, texture->Width * texture->Height * sizeof(unsigned int));
-					
-					for (int y=0;y<png.height;y++)
-					{
-						unsigned int *dst_start = &pixels_out[y * texture->Width];
-						unsigned int *src_start = ((unsigned int*)png.pixels) + (y * png.width);
-						memcpy(dst_start, src_start, png.width * sizeof(unsigned int));
-					}
-					
-					std::cout << "Source image [" << png.width << "x" << png.height << "] => [" << texture->Width << "x" << texture->Height << "]";
-				
-					ccgui::pngutil::write_to_output(builder, pngObj->PngPath.c_str(), pixels_out, texture->Width, texture->Height);
-					delete [] pixels_out;
-
-					texture->Output = &pngObj->parent;
-					
-					std::string path_res(path);
-					path_res.append("_out");
-					putki::db::insert(output, path_res.c_str(), inki::TextureOutputPng::th(), pngObj);
-
-					putki::build_db::add_output(record, path_res.c_str());
-				}
-			}
-
-			ccgui::pngutil::free(&png);
-			return false;
-		}
-
+		ccgui::pngutil::free(&png);
 		return false;
 	}
 };

@@ -240,8 +240,8 @@ namespace ccgui
 
 		void free(loaded_png *png)
 		{
-			std::cout << "[pngutil] free(" << png->pixels << ")" << std::endl;
-			::free(png->pixels);
+			if (png->pixels)
+				::free(png->pixels);
 		}
 	}
 }

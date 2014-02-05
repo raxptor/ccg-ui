@@ -252,6 +252,7 @@ struct atlasbuilder : putki::builder::handler_i
 				// create new texture.
 				inki::Texture *texture = inki::Texture::alloc();
 				texture->Source = output_atlas_path;
+				texture->Configuration = atlas->OutputConfiguration;
 				putki::db::insert(output, outpath.c_str(), inki::Texture::th(), texture);
 				putki::build_db::add_output(record, outpath.c_str());
 

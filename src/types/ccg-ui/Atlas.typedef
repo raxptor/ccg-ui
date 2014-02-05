@@ -21,5 +21,6 @@ AtlasOutput [in, out] non-instantiable
 Atlas [in, out]
 {
 	ptr[] Texture Inputs
+	[no-out] ptr TextureConfiguration OutputConfiguration
 	[hidden] AtlasOutput[] Outputs
 }

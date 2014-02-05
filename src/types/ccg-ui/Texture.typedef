@@ -12,6 +12,11 @@ TextureOutputPng : TextureOutput non-instantiable
 	string PngPath
 }
 
+TextureOutputJpeg : TextureOutput non-instantiable
+{
+	string JpegPath
+}
+
 TextureOutputOpenGL : TextureOutput non-instantiable
 {
 	byte[] Bytes
@@ -36,7 +41,8 @@ TextureOutputFormatPng : TextureOutputFormat
 
 TextureOutputFormatJpeg : TextureOutputFormat
 {
-	int does_not_work
+	int Quality = 85
+	bool Twopass = false
 }
 
 TextureOutputFormatOpenGL : TextureOutputFormat

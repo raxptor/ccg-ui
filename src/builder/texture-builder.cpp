@@ -7,6 +7,7 @@
 #include <putki/builder/db.h>
 
 #include <builder/pngutil.h>
+#include <builder/jpge.h>
 
 #include <iostream>
 
@@ -141,6 +142,59 @@ struct texbuilder : putki::builder::handler_i
 			path_res.append("_out");
 			putki::db::insert(output, path_res.c_str(), inki::TextureOutputPng::th(), pngObj);
 
+			putki::build_db::add_output(record, path_res.c_str());
+		}
+		else if (outputFormat->rtti_type_ref() == inki::TextureOutputFormatJpeg::type_id())
+		{
+			// these are the direct load textures.
+			inki::TextureOutputJpeg *jpgObj = inki::TextureOutputJpeg::alloc();
+			jpgObj->JpegPath = std::string("Resources/") + path + ".jpeg";
+			jpgObj->parent.u0 = 0;
+			jpgObj->parent.v0 = 0;
+			jpgObj->parent.u1 = 1; 
+			jpgObj->parent.v1 = 1;
+			
+			texture->Output = &jpgObj->parent;
+
+			int buf_size = 4*1024*1024;
+			char *databuffer = new char[buf_size];
+			
+			// swap order in-place in the png buffer (naughty)
+			unsigned char *pngpixels = (unsigned char*)png.pixels;
+			for (unsigned int i=0;i<png.width*png.height;i++)
+			{
+				unsigned char t0 = pngpixels[0];
+				unsigned char t1 = pngpixels[1];
+				unsigned char t2 = pngpixels[2];
+				unsigned char t3 = pngpixels[3];
+				pngpixels[0] = t2;
+				pngpixels[1] = t1;
+				pngpixels[2] = t0;
+				pngpixels[3] = t3;
+				
+				pngpixels += 4;
+			}
+			
+			inki::TextureOutputFormatJpeg *fmt = (inki::TextureOutputFormatJpeg *) outputFormat;
+			jpge::params p;
+			p.m_quality = fmt->Quality;
+			p.m_two_pass_flag = fmt->Twopass; 
+			
+			if (!jpge::compress_image_to_jpeg_file_in_memory(databuffer, buf_size, png.width, png.height, 4, (unsigned char*)png.pixels, p))
+			{
+				putki::builder::build_error(builder, "JPEG compression failed");
+			}
+			else
+			{
+				std::cout << "[jpeg] compressed " << png.width << "x" << png.height << " to " << buf_size << " bytes." << std::endl;
+				putki::resource::save_output(builder, jpgObj->JpegPath.c_str(), databuffer, buf_size);
+			}
+			
+			delete [] databuffer;
+			
+			std::string path_res(path);
+			path_res.append("_out");
+			putki::db::insert(output, path_res.c_str(), inki::TextureOutputJpeg::th(), jpgObj);
 			putki::build_db::add_output(record, path_res.c_str());
 		}
 

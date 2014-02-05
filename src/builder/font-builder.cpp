@@ -227,6 +227,7 @@ struct fontbuilder : putki::builder::handler_i
 					// create new texture.
 					inki::Texture *texture = inki::Texture::alloc();
 					texture->Source = output_atlas_path;
+					texture->Configuration = font->TextureConfiguration;
 					putki::db::insert(output, outpath.c_str(), inki::Texture::th(), texture);
 
 					// give font the texture.

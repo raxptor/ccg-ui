@@ -34,6 +34,11 @@ TextureOutputFormat rtti non-instantiable
 
 }
 
+TextureOutputFormatPathOnly : TextureOutputFormat
+{
+	string FileEnding
+}
+
 TextureOutputFormatPng : TextureOutputFormat
 {
 

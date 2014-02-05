@@ -32,5 +32,6 @@ Font [in, out]
 	bool Latin1 = true
 	[no-out] int[] Characters
 	[no-out] int[] PixelSizes
+	ptr TextureConfiguration TextureConfiguration
 	[hidden] FontOutput[] Outputs
 }

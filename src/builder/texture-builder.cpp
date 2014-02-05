@@ -78,6 +78,26 @@ struct texbuilder : putki::builder::handler_i
 			return false;
 		}
 		
+		// TODO: Check overrides for other platforms
+		inki::TextureOutputFormat *outputFormat = config.OutputFormat;
+
+		if (outputFormat->rtti_type_ref() == inki::TextureOutputFormatPathOnly::type_id())
+		{
+			// just write a "fake" png entry with the desired path.
+			inki::TextureOutputFormatPathOnly *fmt = (inki::TextureOutputFormatPathOnly*) outputFormat;		
+			inki::TextureOutputPng *fakeTex = inki::TextureOutputPng::alloc();
+			fakeTex->PngPath = std::string("Resources/") + path + fmt->FileEnding;
+			
+			texture->Width = pnginfo.width;
+			texture->Height = pnginfo.height;
+			texture->Output = &fakeTex->parent;
+			
+			std::string path_res(path);
+			path_res.append("_out");
+			putki::db::insert(output, path_res.c_str(), inki::TextureOutputPng::th(), fakeTex);
+			putki::build_db::add_output(record, path_res.c_str());
+		}
+		
 		// load 
 		ccgui::pngutil::loaded_png png;
 		if (!ccgui::pngutil::load(putki::resource::real_path(builder, texture->Source.c_str()).c_str(), &png))
@@ -86,8 +106,6 @@ struct texbuilder : putki::builder::handler_i
 			return false;
 		}
 		
-		// TODO: Check overrides for other platforms
-		inki::TextureOutputFormat *outputFormat = config.OutputFormat;
 		
 		if (outputFormat->rtti_type_ref() == inki::TextureOutputFormatOpenGL::type_id())
 		{

@@ -22,9 +22,13 @@
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
     <ConsolePause>false</ConsolePause>
+    <EnvironmentVariables>
+      <EnvironmentVariables>
+        <Variable name="DYLD_LIBRARY_PATH" value="./build" />
+      </EnvironmentVariables>
+    </EnvironmentVariables>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <DebugType>full</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <ErrorReport>prompt</ErrorReport>
@@ -33,7 +37,7 @@
     <ConsolePause>false</ConsolePause>
     <EnvironmentVariables>
       <EnvironmentVariables>
-        <Variable name="DYLD_LIBRARY_PATH" value="./build" />
+        <Variable name="DYLD_LIBRARY_PATH" value="build" />
       </EnvironmentVariables>
     </EnvironmentVariables>
   </PropertyGroup>

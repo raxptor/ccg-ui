@@ -16,6 +16,30 @@
 
 struct texbuilder : putki::builder::handler_i
 {
+	static void resize(inki::TextureResizeMode mode, int width, int height, int *out_width, int *out_height)
+	{
+		if (mode == inki::RESIZE_NONE)
+		{
+			*out_width = width;
+			*out_height = height;
+			return;
+		}
+		
+		*out_width = 1;
+		*out_height = 1;
+		
+		while (*out_width < width) *out_width *= 2;
+		while (*out_height < height) *out_height *=2;
+	
+		if (mode == inki::RESIZE_POW2SQUARE)
+		{
+			if (*out_width > *out_height)
+				*out_height = *out_width;
+			else if (*out_height > *out_width)
+				*out_width = *out_height;
+		}	
+	}
+
 	virtual bool handle(putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj, putki::db::data *output, int obj_phase)
 	{
 		inki::Texture *texture = (inki::Texture *) obj;
@@ -24,12 +48,40 @@ struct texbuilder : putki::builder::handler_i
 		texture->id = path;
 
 		std::cout << "Processing texture [" << path << "] source <" << texture->Source << ">" << std::endl;
+		
+		if (texture->PathOnlyPng)
+		{
+			ccgui::pngutil::loaded_png pnginfo;
+			if (ccgui::pngutil::load_info(putki::resource::real_path(builder, texture->Source.c_str()).c_str(), &pnginfo))
+			{
+				resize(texture->ResizeMode, pnginfo.width, pnginfo.height, &texture->Width, &texture->Height);
+				
+				inki::TextureOutputPng *pngObj = inki::TextureOutputPng::alloc();
+				pngObj->PngPath = std::string("Resources/") + path + ".png";
+				pngObj->parent.u0 = 0;
+				pngObj->parent.v0 = 0;
+				pngObj->parent.u1 = float(pnginfo.width) / float(texture->Width);
+				pngObj->parent.v1 = float(pnginfo.height) / float(texture->Height);
+				texture->Output = &pngObj->parent;
+							
+				std::string path_res(path);
+				path_res.append("_out");
+				putki::db::insert(output, path_res.c_str(), inki::TextureOutputPng::th(), pngObj);
+				putki::build_db::add_output(record, path_res.c_str());
+				return false;
+			}
+			else
+			{
+				
+			}
+			
+			return false;
+		}
 
 		ccgui::pngutil::loaded_png png;
 		if (ccgui::pngutil::load(putki::resource::real_path(builder, texture->Source.c_str()).c_str(), &png))
 		{
-			texture->Width = png.width;
-			texture->Height = png.height;
+			resize(texture->ResizeMode, png.width, png.height, &texture->Width, &texture->Height);
 
 			if (!texture->NoOutput)
 			{
@@ -62,10 +114,23 @@ struct texbuilder : putki::builder::handler_i
 					pngObj->PngPath = std::string("Resources/") + path + ".png";
 					pngObj->parent.u0 = 0;
 					pngObj->parent.v0 = 0;
-					pngObj->parent.u1 = 1.0f;
-					pngObj->parent.v1 = 1.0f;
-
-					ccgui::pngutil::write_to_output(builder, pngObj->PngPath.c_str(), png.pixels, png.width, png.height);			
+					pngObj->parent.u1 = float(png.width) / float(texture->Width);
+					pngObj->parent.v1 = float(png.height) / float(texture->Height);
+					
+					unsigned int *pixels_out = new unsigned int[texture->Width * texture->Height];
+					memset(pixels_out, 0x00, texture->Width * texture->Height * sizeof(unsigned int));
+					
+					for (int y=0;y<png.height;y++)
+					{
+						unsigned int *dst_start = &pixels_out[y * texture->Width];
+						unsigned int *src_start = ((unsigned int*)png.pixels) + (y * png.width);
+						memcpy(dst_start, src_start, png.width * sizeof(unsigned int));
+					}
+					
+					std::cout << "Source image [" << png.width << "x" << png.height << "] => [" << texture->Width << "x" << texture->Height << "]";
+				
+					ccgui::pngutil::write_to_output(builder, pngObj->PngPath.c_str(), pixels_out, texture->Width, texture->Height);
+					delete [] pixels_out;
 
 					texture->Output = &pngObj->parent;
 					

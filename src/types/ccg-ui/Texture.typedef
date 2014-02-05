@@ -19,12 +19,21 @@ TextureOutputOpenGL : TextureOutput non-instantiable
 	int Height
 }
 
+enum TextureResizeMode
+{
+	RESIZE_NONE,
+	RESIZE_POW2,
+	RESIZE_POW2SQUARE
+}
+
 Texture [in, out] rtti
 {
 	[no-out] file Source
 	[hidden] ptr TextureOutput Output
 	[hidden] string id
 	[no-out] bool NoOutput
+	[no-out] bool PathOnlyPng
+	[no-out] enum TextureResizeMode ResizeMode = RESIZE_NONE
 	[hidden] int Width
 	[hidden] int Height
 }

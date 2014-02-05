@@ -113,10 +113,22 @@ public class UIRenderer
 	{
 		UIRenderer.Texture t = new Texture();
 		t.ld = LoadTexture(tex);
-		t.u0 = u0;
-		t.v0 = v0;
-		t.u1 = u1;
-		t.v1 = v1;
+
+		outki.TextureOutputPng png = (outki.TextureOutputPng) tex.Output;
+		if (png != null)
+		{
+			t.u0 = png.u0 + (png.u1 - png.u0) * u0;
+			t.v0 = png.v0 + (png.v1 - png.v0) * v0;
+			t.u1 = png.u0 + (png.u1 - png.u0) * u1;
+			t.v1 = png.v0 + (png.v1 - png.v0) * v1;
+		}
+		else
+		{
+			t.u0 = u0;
+			t.v0 = v0;
+			t.u1 = u1;
+			t.v1 = v1;
+		}
 		return t;
 	}
 	

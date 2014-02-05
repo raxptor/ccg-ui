@@ -23,6 +23,7 @@ public class UITusch
 			{
 				n[i] = new Tch();
 				n[i].position = Input.touches[i].position;
+				n[i].position.y = Screen.height - n[i].position.y;
 				n[i].fingerId = Input.touches[i].fingerId;
 			}
 			return n;

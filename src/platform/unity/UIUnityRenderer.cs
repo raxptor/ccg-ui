@@ -65,20 +65,35 @@ public class UIRenderer
 	
 	public static LoadedTexture LoadTexture(outki.Texture tex)
 	{
-		outki.TextureOutputPng png = (outki.TextureOutputPng) tex.Output;
+		string imgPath = null;
+
+		outki.TextureOutputPng png = tex.Output as outki.TextureOutputPng;
 		if (png != null)
+		{
+			imgPath = png.PngPath;
+		}
+
+		outki.TextureOutputJpeg jpeg = tex.Output as outki.TextureOutputJpeg;
+		if (jpeg != null)
+		{
+			imgPath = jpeg.JpegPath;
+		}
+
+		if (imgPath != null)
 		{
 			foreach (LoadedTexture lt in loaded)
 			{
-				if (lt.path == png.PngPath)
+				if (lt.path == imgPath)
 				{
 					return lt;
 				}
 			}
 
+			UnityEngine.Debug.Log("Loading img [" + imgPath + "]");
+
 			LoadedTexture ld = new LoadedTexture();
 
-			TextAsset ta = Resources.Load(png.PngPath.Replace("Resources/",""), typeof(TextAsset)) as TextAsset;
+			TextAsset ta = Resources.Load(imgPath.Replace("Resources/",""), typeof(TextAsset)) as TextAsset;
 			if (ta != null)
 			{
 				ld.unityTexture = new Texture2D (4, 4);
@@ -89,20 +104,22 @@ public class UIRenderer
 			else
 			{
 				// Try loading texture asset
-				ld.unityTexture = Resources.Load(png.PngPath.Replace("Resources/","").Replace(".png", "")) as Texture2D;
+				ld.unityTexture = Resources.Load(imgPath.Replace("Resources/","").Replace(".png", "")) as Texture2D;
 				if (ld.unityTexture == null)
 				{
-					UnityEngine.Debug.LogError("Failed to load texture [" + png.PngPath + "]");
+					UnityEngine.Debug.LogError("Failed to load texture [" + imgPath + "]");
 					return null;
 				}
 			}
 
+			ld.unityTexture.wrapMode = TextureWrapMode.Clamp;
+
 			ld.material = new Material(TexturedShader);
 			ld.material.mainTexture = ld.unityTexture;
-			ld.path = png.PngPath;
+			ld.path = imgPath;
 			loaded.Add(ld);
 			
-			UnityEngine.Debug.Log("Loaded texture " + png.PngPath + " it is "+ ld.unityTexture);		
+			UnityEngine.Debug.Log("Loaded texture " + imgPath + " it is "+ ld.unityTexture);		
 			return ld;
 		}
 		
@@ -114,9 +131,10 @@ public class UIRenderer
 		UIRenderer.Texture t = new Texture();
 		t.ld = LoadTexture(tex);
 
-		outki.TextureOutputPng png = (outki.TextureOutputPng) tex.Output;
+		outki.TextureOutputPng png = tex.Output as outki.TextureOutputPng;
 		if (png != null)
 		{
+			// unused for now, need to add for jpeg too?!
 			t.u0 = png.u0 + (png.u1 - png.u0) * u0;
 			t.v0 = png.v0 + (png.v1 - png.v0) * v0;
 			t.u1 = png.u0 + (png.u1 - png.u0) * u1;

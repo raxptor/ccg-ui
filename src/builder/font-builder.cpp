@@ -45,7 +45,7 @@ struct fontbuilder : putki::builder::handler_i
 			for (int i='0';i<='9';i++)
 				font->Characters.push_back(i);
 			
-			const char *special = "!()#?:/\\<>[] ";
+			const char *special = "!()#?:/\\<>[] .,";
 			for (int i=0;i<strlen(special);i++)
 				font->Characters.push_back(special[i]);
 		}

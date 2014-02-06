@@ -13,6 +13,14 @@ public class UIRenderer
 			b = _b;
 			a = _a;
 		}
+
+		public RColor(outki.UIColor col)
+		{
+			r = col.r / 255.0f;
+			g = col.g / 255.0f;
+			b = col.b / 255.0f;
+			a = col.a / 255.0f;
+		}
 		
 		public float r, g, b, a;
 	}
@@ -45,12 +53,12 @@ public class UIRenderer
 		m_currentColor = c;
 	}
 	
-	public static RColor GetColor(RColor c)
+	public static RColor GetColor()
 	{
 		return m_currentColor;
 	}
 	
-	public static void MultipylColor(RColor c)
+	public static void MultiplyColor(RColor c)
 	{
 		m_currentColor.r *= c.r;
 		m_currentColor.g *= c.g;
@@ -131,7 +139,7 @@ public class UIRenderer
 		UIRenderer.Texture t = new Texture();
 		t.ld = LoadTexture(tex);
 
-		outki.TextureOutputPng png = tex.Output as outki.TextureOutputPng;
+		outki.TextureOutput png = tex.Output as outki.TextureOutput;
 		if (png != null)
 		{
 			// unused for now, need to add for jpeg too?!
@@ -139,13 +147,6 @@ public class UIRenderer
 			t.v0 = png.v0 + (png.v1 - png.v0) * v0;
 			t.u1 = png.u0 + (png.u1 - png.u0) * u1;
 			t.v1 = png.v0 + (png.v1 - png.v0) * v1;
-		}
-		else
-		{
-			t.u0 = u0;
-			t.v0 = v0;
-			t.u1 = u1;
-			t.v1 = v1;
 		}
 		return t;
 	}

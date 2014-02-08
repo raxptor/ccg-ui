@@ -1,4 +1,3 @@
-#include <putki/builder/app.h>
 #include <putki/builder/build.h>
 #include <putki/builder/builder.h>
 #include <putki/builder/package.h>
@@ -12,6 +11,8 @@
 
 struct screenbuilder : putki::builder::handler_i
 {
+	virtual const char *version() { return "screen-builder-1"; }
+
 	virtual bool handle(putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj, putki::db::data *output, int obj_phase)
 	{
 		inki::UIScreen *screen = (inki::UIScreen *) obj;

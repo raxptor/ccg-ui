@@ -1,4 +1,3 @@
-#include <putki/builder/app.h>
 #include <putki/builder/build.h>
 #include <putki/builder/builder.h>
 #include <putki/builder/package.h>
@@ -28,6 +27,8 @@ namespace
 	{
 		float k[KERNEL_SIZE * KERNEL_SIZE];
 	};
+	
+	const char *builder_version = "atlas-builder-1";
 
 	void make_sample_kernel(sample_kernel *out, float rt, float suppression = 0.90f, float adjx=0, float adjy=0)
 	{
@@ -98,6 +99,8 @@ namespace
 
 struct atlasbuilder : putki::builder::handler_i
 {
+	virtual const char *version() { return builder_version; }
+
 	virtual bool handle(putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj, putki::db::data *output, int obj_phase)
 	{
 		inki::Atlas *atlas = (inki::Atlas *) obj;
@@ -106,7 +109,7 @@ struct atlasbuilder : putki::builder::handler_i
 		std::vector<ccgui::pngutil::loaded_png> loaded;
 		std::vector<rbp::InputRect> inputRects;
 
-		static unsigned int fakepixel = 0xffff00ff;
+//		static unsigned int fakepixel = 0xffff00ff;
 
 		int max_width = 1;
 		int max_height = 1;
@@ -131,6 +134,9 @@ struct atlasbuilder : putki::builder::handler_i
 			}
 			else
 			{
+				const char *path = atlas->Inputs[i]->Source.c_str();
+				putki::build_db::add_external_resource_dependency(record, path, putki::resource::signature(builder, path).c_str());
+			
 				loaded.push_back(png);
 
 				rbp::InputRect ir;
@@ -252,7 +258,7 @@ struct atlasbuilder : putki::builder::handler_i
 				texture->Source = output_atlas_path;
 				texture->Configuration = atlas->OutputConfiguration;
 				putki::db::insert(output, outpath.c_str(), inki::Texture::th(), texture);
-				putki::build_db::add_output(record, outpath.c_str());
+				putki::build_db::add_output(record, outpath.c_str(), builder_version);
 
 				ao.Texture = texture;
 				atlas->Outputs.push_back(ao);

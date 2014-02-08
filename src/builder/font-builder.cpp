@@ -1,4 +1,3 @@
-#include <putki/builder/app.h>
 #include <putki/builder/build.h>
 #include <putki/builder/builder.h>
 #include <putki/builder/package.h>
@@ -27,9 +26,14 @@ struct TmpGlyphInfo
 	char *data;
 };
 
+namespace {
+	const char *builder_version = "font-builder-1";
+}
 
 struct fontbuilder : putki::builder::handler_i
 {
+	virtual const char *version() { return builder_version; }
+
 	virtual bool handle(putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj, putki::db::data *output, int obj_phase)
 	{
 		inki::Font *font = (inki::Font *) obj;
@@ -50,6 +54,8 @@ struct fontbuilder : putki::builder::handler_i
 				font->Characters.push_back(special[i]);
 		}
 
+		putki::build_db::add_external_resource_dependency(record, font->Source.c_str(), putki::resource::signature(builder, font->Source.c_str()).c_str());
+		
 		const char *fnt_data;
 		long long fnt_len;
 		if (putki::resource::load(builder, font->Source.c_str(), &fnt_data, &fnt_len))
@@ -235,7 +241,7 @@ struct fontbuilder : putki::builder::handler_i
 					font->Outputs.push_back(up);
 
 					// add it so it will be built.
-					putki::build_db::add_output(record, outpath.c_str());
+					putki::build_db::add_output(record, outpath.c_str(), builder_version);
 				}
 			}
 			

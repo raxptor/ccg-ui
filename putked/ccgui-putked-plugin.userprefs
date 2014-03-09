@@ -8,7 +8,7 @@
       <File FileName="../../putki/putked/putked/FileIndex.cs" Line="1" Column="1" />
       <File FileName="../../putki/putked/putked/AssetEditor.cs" Line="1" Column="1" />
       <File FileName="../../putki/putked/putked/MainWindow.cs" Line="1" Column="1" />
-      <File FileName="../../putki/putked/putki-lib/DLLLoader.cs" Line="426" Column="13" />
+      <File FileName="../../putki/putked/putki-lib/DLLLoader.cs" Line="1" Column="1" />
       <File FileName="../../putki/putked/putked/PutkEd.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>

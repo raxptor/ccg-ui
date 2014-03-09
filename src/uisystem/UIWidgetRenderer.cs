@@ -87,8 +87,8 @@ namespace CCGUI
 				layout.x1 = layout.x0 + (float) Math.Floor(0.5f + width * rctx.LayoutScale);
 				layout.y1 = layout.y0 + (float) Math.Floor(0.5f + height * rctx.LayoutScale);
 				
-				m_rtData[i].layout = layout;
 				m_rtData[i].renderer.OnLayout(rctx, ref layout);
+				m_rtData[i].layout = layout;
 			}
 		}
 

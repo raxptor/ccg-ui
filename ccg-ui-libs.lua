@@ -44,8 +44,8 @@
 
 		links { "ccg-ui-putki-lib"}
 		links { "freetype2" }
-		links { "libpng"}
 
+		links { "libccgpng" }
 		links (PUTKI_LIB_LINKS)		
 
 	project "ccg-runtime"

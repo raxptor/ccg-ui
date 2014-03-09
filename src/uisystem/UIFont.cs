@@ -29,10 +29,13 @@ namespace CCGUI
 
 			public int lines;
 		};
+
+		float m_spacingMultiplier = 1.0f;
 		
-		public UIFont(outki.Font data)
+		public UIFont(outki.Font data, float spacingMultiplier = 1.0f)
 		{
 			m_data = data;
+			m_spacingMultiplier = spacingMultiplier;
 		}
 
 		public FormattedText FormatText(UIRenderContext ctx, string text, int pixelSize_, float wrapLength = 0.0f)
@@ -96,7 +99,7 @@ namespace CCGUI
 					for (int k=0;k<f.KerningCharL.Count();k++)
 						if (f.KerningCharL[k] == left && f.KerningCharR[k] == right)
 						{
-							pen += f.KerningOfs[k];
+							pen += (int)(m_spacingMultiplier * f.KerningOfs[k]);
 							break;
 						}
 				}
@@ -152,7 +155,7 @@ namespace CCGUI
 						if (y < fmt.y0) fmt.y0 = y;
 						if (y + h > fmt.y1) fmt.y1 = y + h;
 
-						pen += fgl.advance;
+						pen += (int)(m_spacingMultiplier * fgl.advance);
 						break;
 					}
 				}

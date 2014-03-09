@@ -50,7 +50,15 @@ namespace CCGUI
 
 		public void Render(UIRenderContext rctx, ref UIElementLayout layout)
 		{
+			UIRenderer.RColor rc, old;
+			old = UIRenderer.GetColor();
+			rc.r = (float)m_element.color.r / 255.0f;
+			rc.g = (float)m_element.color.g / 255.0f;
+			rc.b = (float)m_element.color.b / 255.0f;
+			rc.a = (float)m_element.color.a / 255.0f;
+			UIRenderer.SetColor(rc);
 			m_font.Render(rctx, m_x0, m_y0, m_fmted);
+			UIRenderer.SetColor(old);
 		}
 	}
 }

@@ -25,15 +25,19 @@ namespace ccgui
 		{
 			void write(png_structp png_ptr, png_bytep data, png_size_t length)
 			{
-				write_buffer* p = (write_buffer*) png_get_io_ptr(png_ptr); 
+				write_buffer* p = (write_buffer*) png_get_io_ptr(png_ptr);
 
 				size_t nsize = p->size + length;
 
 				/* allocate or grow buffer */
 				if (p->output)
+				{
 					p->output = (char*)realloc(p->output, nsize);
-				 else
+				}
+				else
+				{
 					p->output = (char*)malloc(nsize);
+				}
 
 				/* copy new bytes to end of buffer */
 				memcpy(p->output + p->size, data, length);
@@ -55,33 +59,35 @@ namespace ccgui
 			int status = -1;
 
 			png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
-			if (png_ptr == NULL) {
+			if (png_ptr == NULL)
+			{
 				goto png_create_write_struct_failed;
 			}
 
 			info_ptr = png_create_info_struct(png_ptr);
-			if (info_ptr == NULL) {
+			if (info_ptr == NULL)
+			{
 				goto png_create_info_struct_failed;
 			}
 
 			/* Set image attributes. */
 			png_set_IHDR (png_ptr,
-							info_ptr,
-							width,
-							height,
-							8,
-							PNG_COLOR_TYPE_RGBA,
-							PNG_INTERLACE_NONE,
-							PNG_COMPRESSION_TYPE_DEFAULT,
-							PNG_FILTER_TYPE_DEFAULT);
-    
+			              info_ptr,
+			              width,
+			              height,
+			              8,
+			              PNG_COLOR_TYPE_RGBA,
+			              PNG_INTERLACE_NONE,
+			              PNG_COMPRESSION_TYPE_DEFAULT,
+			              PNG_FILTER_TYPE_DEFAULT);
+
 			/* Initialize rows of PNG. */
 			row_pointers = (png_byte**) png_malloc(png_ptr, height * sizeof (png_byte *));
-			for (y = 0; y < height; ++y)
+			for (y = 0;y < height;++y)
 			{
 				png_byte *row = (png_byte*) png_malloc(png_ptr, width * 4);
 				row_pointers[y] = row;
-				for (x = 0; x < width; ++x) 
+				for (x = 0;x < width;++x)
 				{
 					*row++ = (pixbuf[y * width + x] >> 16) & 0xff;
 					*row++ = (pixbuf[y * width + x] >> 8) & 0xff;
@@ -89,7 +95,7 @@ namespace ccgui
 					*row++ = (pixbuf[y * width + x] >> 24) & 0xff;
 				}
 			}
-    
+
 			/* Write the image data to "fp". */
 
 			write_buffer wb;
@@ -102,7 +108,7 @@ namespace ccgui
 			png_write_png (png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
 
 			/* The routine has successfully written the file, so we set
-				"status" to a value which indicates success. */
+			        "status" to a value which indicates success. */
 
 			status = 0;
 
@@ -112,9 +118,9 @@ namespace ccgui
 			}
 
 			png_free(png_ptr, row_pointers);
-			png_create_info_struct_failed:
+png_create_info_struct_failed:
 			png_destroy_write_struct (&png_ptr, &info_ptr);
-			png_create_write_struct_failed:
+png_create_write_struct_failed:
 
 			return wb;
 		}
@@ -153,31 +159,33 @@ namespace ccgui
 			unsigned int sig_read = 0;
 			int color_type, interlace_type;
 			FILE *fp;
- 
+
 			if (!(fp = fopen(path, "rb")))
+			{
 				return false;
+			}
 
 			png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
- 
-			if (png_ptr == NULL) 
+
+			if (png_ptr == NULL)
 			{
 				fclose(fp);
 				return false;
 			}
- 
+
 			info_ptr = png_create_info_struct(png_ptr);
-			if (!info_ptr) 
+			if (!info_ptr)
 			{
 				fclose(fp);
 				png_destroy_read_struct(&png_ptr, NULL, NULL);
 				return false;
 			}
- 
+
 			png_init_io(png_ptr, fp);
 			png_set_sig_bytes(png_ptr, sig_read);
 
 			png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_STRIP_16 | PNG_TRANSFORM_PACKING | PNG_TRANSFORM_EXPAND, NULL);
- 
+
 			png_uint_32 width, height;
 			int bit_depth;
 			png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type, NULL, NULL);
@@ -193,13 +201,13 @@ namespace ccgui
 				fclose(fp);
 				return true;
 			}
- 
+
 			unsigned int row_bytes = png_get_rowbytes(png_ptr, info_ptr);
 			out->pixels = (unsigned int *) ::malloc(4 * width * height);
- 
+
 			png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);
- 			
-			for (unsigned int i = 0; i < height; i++)
+
+			for (unsigned int i = 0;i < height;i++)
 			{
 				unsigned int *outptr = &out->pixels[width * i];
 				unsigned char *inptr = row_pointers[i];
@@ -218,10 +226,10 @@ namespace ccgui
 					}
 				}
 			}
- 
+
 			png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 
- 
+
 			/* Close the file */
 			fclose(fp);
 			return true;
@@ -240,8 +248,9 @@ namespace ccgui
 		void free(loaded_png *png)
 		{
 			if (png->pixels)
+			{
 				::free(png->pixels);
+			}
 		}
 	}
 }
-

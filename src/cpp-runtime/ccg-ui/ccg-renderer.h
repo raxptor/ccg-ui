@@ -4,7 +4,7 @@
 
 namespace ccgui
 {
-	class render_api 
+	class render_api
 	{
 		public:
 
@@ -13,7 +13,7 @@ namespace ccgui
 
 			}
 
-			virtual ~render_api() 
+			virtual ~render_api()
 			{
 
 			}
@@ -23,7 +23,7 @@ namespace ccgui
 
 		private:
 	};
-	
+
 	inline unsigned int col2int(outki::UIColor *c)
 	{
 		return (((unsigned int)c->a) << 24) | (((unsigned int)c->r) << 16)

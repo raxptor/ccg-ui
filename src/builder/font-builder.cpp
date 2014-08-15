@@ -32,7 +32,9 @@ namespace {
 
 struct fontbuilder : putki::builder::handler_i
 {
-	virtual const char *version() { return builder_version; }
+	virtual const char *version() {
+		return builder_version;
+	}
 
 	virtual bool handle(putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj, putki::db::data *output, int obj_phase)
 	{
@@ -48,14 +50,14 @@ struct fontbuilder : putki::builder::handler_i
 				font->Characters.push_back(i);
 			for (int i='0';i<='9';i++)
 				font->Characters.push_back(i);
-			
+
 			const char *special = "!()#?:/\\<>[] .,";
 			for (int i=0;i<strlen(special);i++)
 				font->Characters.push_back(special[i]);
 		}
 
 		putki::build_db::add_external_resource_dependency(record, font->Source.c_str(), putki::resource::signature(builder, font->Source.c_str()).c_str());
-		
+
 		const char *fnt_data;
 		long long fnt_len;
 		if (putki::resource::load(builder, font->Source.c_str(), &fnt_data, &fnt_len))
@@ -124,8 +126,14 @@ struct fontbuilder : putki::builder::handler_i
 
 					const int y0 = g.bearingY - 64 * g.h;
 					const int y1 = g.bearingY;
-					if (y0 < up.BBoxMinY) up.BBoxMinY = y0;
-					if (y1 > up.BBoxMaxY) up.BBoxMaxY = y1;
+					if (y0 < up.BBoxMinY)
+					{
+						up.BBoxMinY = y0;
+					}
+					if (y1 > up.BBoxMaxY)
+					{
+						up.BBoxMaxY = y1;
+					}
 
 					for (unsigned int j=0;j<font->Characters.size();j++)
 					{
@@ -176,16 +184,20 @@ struct fontbuilder : putki::builder::handler_i
 					else
 					{
 						if (out_height > out_width)
+						{
 							out_width *= 2;
+						}
 						else
+						{
 							out_height *= 2;
+						}
 					}
 				}
 
 				unsigned int * outBmp = new unsigned int[out_width * out_height];
 				for (int y=0;y<out_height;y++)
 				{
-					for (int x=0;x	<out_width;x++)
+					for (int x=0;x  <out_width;x++)
 					{
 						// outBmp[y*out_width+x] = (x^y) & 1 ? 0xff101010 : 0xff808080;
 						outBmp[y*out_width+x] = 0x00ffffff;
@@ -207,7 +219,7 @@ struct fontbuilder : putki::builder::handler_i
 					fg.pixelWidth = g.w;
 					fg.pixelHeight = g.h;
 					fg.bearingX = g.bearingX;
-					fg.bearingY = - g.bearingY;
+					fg.bearingY = -g.bearingY;
 					fg.advance = g.advance;
 
 					up.Glyphs.push_back(fg);
@@ -244,14 +256,14 @@ struct fontbuilder : putki::builder::handler_i
 					putki::build_db::add_output(record, outpath.c_str(), builder_version);
 				}
 			}
-			
+
 			return false;
 		}
 		else
 		{
 			putki::builder::build_error(builder, "Load failed.");
 		}
-		
+
 		return false;
 	}
 };
@@ -261,4 +273,3 @@ void register_font_builder(putki::builder::data *builder)
 	static fontbuilder fb;
 	putki::builder::add_data_builder(builder, "Font", putki::builder::PHASE_INDIVIDUAL, &fb);
 }
-

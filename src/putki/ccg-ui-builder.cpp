@@ -21,4 +21,3 @@ void ccg_ui_register_handlers(putki::builder::data *builder)
 	register_atlas_builder(builder);
 	register_screen_builder(builder);
 }
-

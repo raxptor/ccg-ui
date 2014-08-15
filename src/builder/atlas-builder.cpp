@@ -27,7 +27,7 @@ namespace
 	{
 		float k[KERNEL_SIZE * KERNEL_SIZE];
 	};
-	
+
 	const char *builder_version = "atlas-builder-1";
 
 	void make_sample_kernel(sample_kernel *out, float rt, float suppression = 0.90f, float adjx=0, float adjy=0)
@@ -42,7 +42,7 @@ namespace
 			{
 				const float cx = x - KERNEL_SIZE / 2 - adjx;
 				const float cy = y - KERNEL_SIZE / 2 - adjy;
-				const float val = mul * expf( - float(cx*cx + cy*cy) / (2.0f * d *d));
+				const float val = mul * expf( -float(cx*cx + cy*cy) / (2.0f * d *d));
 				out->k[y*KERNEL_SIZE+x] = val;
 				sum += val;
 			}
@@ -66,7 +66,7 @@ namespace
 		{
 			int cx = int(_x) - KERNEL_SIZE / 2;
 			int cy = int(_y) - KERNEL_SIZE / 2;
-			
+
 			unsigned char *pxc = (unsigned char*) px;
 			pxc += component / 8;
 
@@ -77,20 +77,38 @@ namespace
 				{
 					int px = cx + x;
 					int py = cy + y;
-					if (px < 0) px = 0;
-					if (py < 0) py = 0;
-					if (px > s_width - 1)  px = s_width  - 1;
-					if (py > s_height - 1) py = s_height - 1;
+					if (px < 0)
+					{
+						px = 0;
+					}
+					if (py < 0)
+					{
+						py = 0;
+					}
+					if (px > s_width - 1)
+					{
+						px = s_width  - 1;
+					}
+					if (py > s_height - 1)
+					{
+						py = s_height - 1;
+					}
 					sum += float(pxc[4 * (py * s_width + px)]) * blah.k[y*KERNEL_SIZE+x];
 				}
 			}
 
-			if (sum > 255) sum = 255;
-			if (sum < 0) sum = 255;
+			if (sum > 255)
+			{
+				sum = 255;
+			}
+			if (sum < 0)
+			{
+				sum = 255;
+			}
 			int val = (int) sum;
 			outpx |= (val << component);
 		}
-	
+
 		return outpx;
 
 		//return px[s_width * y + x];
@@ -99,7 +117,9 @@ namespace
 
 struct atlasbuilder : putki::builder::handler_i
 {
-	virtual const char *version() { return builder_version; }
+	virtual const char *version() {
+		return builder_version;
+	}
 
 	virtual bool handle(putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj, putki::db::data *output, int obj_phase)
 	{
@@ -117,7 +137,9 @@ struct atlasbuilder : putki::builder::handler_i
 		int border = 2;
 
 		if (atlas->Inputs.size() == 1)
+		{
 			border = 0;
+		}
 
 		for (unsigned int i=0;i<atlas->Inputs.size();i++)
 		{
@@ -126,7 +148,7 @@ struct atlasbuilder : putki::builder::handler_i
 				std::cout << "*** Blank entry in atlas at slot " << i << std::endl;
 				continue;
 			}
-			
+
 			ccgui::pngutil::loaded_png png;
 			if (!ccgui::pngutil::load(putki::resource::real_path(builder, atlas->Inputs[i]->Source.c_str()).c_str(), &png))
 			{
@@ -136,7 +158,7 @@ struct atlasbuilder : putki::builder::handler_i
 			{
 				const char *path = atlas->Inputs[i]->Source.c_str();
 				putki::build_db::add_external_resource_dependency(record, path, putki::resource::signature(builder, path).c_str());
-			
+
 				loaded.push_back(png);
 
 				rbp::InputRect ir;
@@ -145,13 +167,19 @@ struct atlasbuilder : putki::builder::handler_i
 				ir.id = loaded.size() - 1;
 				inputRects.push_back(ir);
 
-				if (ir.width > max_width) max_width = ir.width;
-				if (ir.height > max_height) max_height = ir.height;
+				if (ir.width > max_width)
+				{
+					max_width = ir.width;
+				}
+				if (ir.height > max_height)
+				{
+					max_height = ir.height;
+				}
 
 				std::cout << "      " << atlas->Inputs[i]->Source.c_str() << " loaded [" << png.width << "x" << png.height << "]" << std::endl;
 			}
 		}
-		
+
 
 		for (int i=0;i<g_outputTexConfigs;i++)
 		{
@@ -190,9 +218,13 @@ struct atlasbuilder : putki::builder::handler_i
 				else
 				{
 					if (out_height > out_width)
+					{
 						out_width *= 2;
+					}
 					else
+					{
 						out_height *= 2;
+					}
 
 					packedRects.clear();
 				}
@@ -202,24 +234,24 @@ struct atlasbuilder : putki::builder::handler_i
 			unsigned int * outBmp = new unsigned int[out_width * out_height];
 			memset(outBmp, 0x00, sizeof(unsigned int) * out_width * out_height);
 
-			/* - test pattern - 
-			for (int y=0;y<out_height;y++)
-			{
-				for (int x=0;x<out_width;x++)
-				{
-					outBmp[y*out_width+x] = (x^y) & 1 ? 0xff101010 : 0xfff0f0f0;
-				}
-			}
-			*/
+			/* - test pattern -
+			   for (int y=0;y<out_height;y++)
+			   {
+			        for (int x=0;x<out_width;x++)
+			        {
+			                outBmp[y*out_width+x] = (x^y) & 1 ? 0xff101010 : 0xfff0f0f0;
+			        }
+			   }
+			 */
 
 			inki::AtlasOutput ao;
-			
+
 			ao.Width = out_width;
 			ao.Height = out_height;
 			ao.Scale = g_outputTexConf[i].scale;
 
 			std::cout << "[atlas-builder] Packing into " << out_width << "x" << out_height << std::endl;
-			
+
 			for (unsigned int k=0;k<packedRects.size();k++)
 			{
 				ccgui::pngutil::loaded_png const &g = loaded[packedRects[k].id];
@@ -227,10 +259,10 @@ struct atlasbuilder : putki::builder::handler_i
 
 				sample_kernel krn;
 				make_sample_kernel(&krn, scaleConfig.scale);
-				
+
 				for (int y=0;y<out.height;y++)
 				{
-					 for (int x=0;x<out.width;x++)
+					for (int x=0;x<out.width;x++)
 						outBmp[out_width * (out.y + y) + (out.x + x)] = sample(g.pixels, g.width, g.height, out.width - border * 2, out.height - border * 2, krn, x - border, y - border);
 				}
 
@@ -263,10 +295,10 @@ struct atlasbuilder : putki::builder::handler_i
 				ao.Texture = texture;
 				atlas->Outputs.push_back(ao);
 			}
-			
+
 			for (unsigned int i=0;i!=loaded.size();i++)
 				ccgui::pngutil::free(&loaded[i]);
-			
+
 			delete [] outBmp;
 		}
 

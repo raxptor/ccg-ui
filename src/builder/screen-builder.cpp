@@ -11,14 +11,16 @@
 
 struct screenbuilder : putki::builder::handler_i
 {
-	virtual const char *version() { return "screen-builder-1"; }
+	virtual const char *version() {
+		return "screen-builder-1";
+	}
 
 	virtual bool handle(putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj, putki::db::data *output, int obj_phase)
 	{
 		inki::UIScreen *screen = (inki::UIScreen *) obj;
 
 		// ERR IF screen->Config == null
-		
+
 		if (screen && screen->Config && screen->Config->SnapScale)
 		{
 			for (int i=0;i<g_outputTexConfigs;i++)
@@ -34,4 +36,3 @@ void register_screen_builder(putki::builder::data *builder)
 	static screenbuilder fb;
 	putki::builder::add_data_builder(builder, "UIScreen", putki::builder::PHASE_INDIVIDUAL, &fb);
 }
-

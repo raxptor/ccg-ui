@@ -52,20 +52,20 @@ namespace ccgui
 				const float s = xs < ys ? xs : ys;
 				const float w = s * d->data->Root->width;
 				const float h = s * d->data->Root->height;
-				
+
 				_x0 = floorf((x0 + x1 - w) / 2.0f);
 				_y0 = floorf((y0 + y1 - h) / 2.0f);
 				_x1 = _x0 + w;
 				_y1 = _y0 + h;
 			}
-			
+
 			uiwidget::layout(d->root, _x0, _y0, _x1, _y1);
-			
+
 			renderinfo ri;
 			ri.backend = d->backend;
 			ri.screen = d;
 			ri.context = context;
-			
+
 			uiwidget::update(d->root, &ri);
 			uiwidget::draw(d->root, &ri);
 		}
@@ -81,7 +81,9 @@ namespace ccgui
 					{
 						const outki::AtlasOutput *output = &atlas->Outputs[j];
 						if (output->Scale != 1.0f)
+						{
 							continue;
+						}
 
 						for (unsigned int k=0;k<output->Entries_size;k++)
 						{

@@ -3,7 +3,7 @@
 
 namespace ccgui
 {
-	namespace builder { struct data; }
+	namespace builder { struct data;}
 	namespace pngutil
 	{
 		std::string write_to_temp(putki::builder::data *builder, const char *path, unsigned int *pixbuf, unsigned int width, unsigned int height);

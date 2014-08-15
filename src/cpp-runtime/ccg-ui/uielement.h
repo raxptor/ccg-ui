@@ -7,7 +7,7 @@
 
 namespace ccgui
 {
-	namespace uiscreen { struct instance; }
+	namespace uiscreen { struct instance;}
 
 	namespace uielement
 	{
@@ -15,7 +15,7 @@ namespace ccgui
 
 		bool is_mouseover(uicontext *context, element_id elId);
 		bool is_mousepressed(uicontext *context, element_id elId);
-		
+
 		bool button_logic(uiscreen::renderinfo *rinfo, element_id elId, float x0, float y0, float x1, float y1);
 
 		// generic components

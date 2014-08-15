@@ -11,14 +11,14 @@ enum Language
 
 Translation [in, out]
 {
-	enum Language Lang = English
 	string SID
-	string Value
+	string Text
+	string[] PluralForms
 }
 
 StringDatabase [in, out]
 {
-	string[] SIDs
+	enum Language Lang = English
 	Translation[] Translations
 }
 

@@ -33,6 +33,7 @@ enum TextureResizeMode
 TextureOutputFormat rtti non-instantiable
 {
 	enum TextureResizeMode ResizeMode = RESIZE_NONE
+	bool PremultiplyAlpha = true
 }
 
 TextureOutputFormatPathOnly : TextureOutputFormat

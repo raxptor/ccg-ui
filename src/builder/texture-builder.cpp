@@ -132,6 +132,17 @@ struct texbuilder : putki::builder::handler_i
 			putki::builder::build_error(builder, "Failed to load source file!");
 			return false;
 		}
+		
+		if (outputFormat->PremultiplyAlpha)
+		{
+			for (int i=0;i<png.width*png.height;i++)
+			{
+				unsigned char *ptr = (unsigned char*)&png.pixels[i];
+				ptr[1] = ptr[1] * ptr[0] / 255;
+				ptr[2] = ptr[2] * ptr[0] / 255;
+				ptr[3] = ptr[3] * ptr[0] / 255;
+			}
+		}
 
 		// uncrop
 		unsigned int *outData = png.pixels;

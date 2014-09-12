@@ -8,6 +8,7 @@ namespace CCGUI
 	public class UIFont
 	{
 		outki.Font m_data;
+		DynamicGlyphCache m_cache;
 
 		public struct FormattedGlyph
 		{
@@ -15,6 +16,7 @@ namespace CCGUI
 			public float w, h;
 			public float u0, v0, u1, v1;
 			public bool wordbreak;
+			public UIRenderer.Texture texture;
 		}
 
 		public class FormattedText
@@ -32,9 +34,10 @@ namespace CCGUI
 
 		float m_spacingMultiplier = 1.0f;
 		
-		public UIFont(outki.Font data, float spacingMultiplier = 1.0f)
+		public UIFont(outki.Font data, DynamicGlyphCache cache = null, float spacingMultiplier = 1.0f)
 		{
 			m_data = data;
+			m_cache = cache;
 			m_spacingMultiplier = spacingMultiplier;
 		}
 
@@ -128,17 +131,74 @@ namespace CCGUI
 						continue;
 					}
 				}
+				
+				bool gotit = false;
+				
+				foreach (outki.FontGlyphPixData fgl in f.PixGlyphs)
+				{
+					if (m_cache == null)
+						break;
+
+					fmt.glyphs[i].w = -666;
+					if (fgl.glyph == gl)
+					{
+						string glyphId = "fnt-" + f.PixelSize + "-" + fgl.glyph; 
+						DynamicGlyphCache.Entry entry = m_cache.GetGlyph(glyphId, fgl);
+						if (entry == null)
+							break;
+
+						fmt.glyphs[i].u0 = entry.rect._u0;
+						fmt.glyphs[i].v0 = entry.rect._v0;
+						fmt.glyphs[i].u1 = entry.rect._u1;
+						fmt.glyphs[i].v1 = entry.rect._v1;
+						fmt.glyphs[i].texture = entry.atlas.m_uitexture;
+						
+						float x = (scaling * ((pen + fgl.bearingX) >> 6));
+						float y = (scaling * ((0 + fgl.bearingY) >> 6));
+						float w = fgl.pixelWidth * scaling;
+						float h = fgl.pixelHeight * scaling;
+						
+						fmt.glyphs[i].x = x;
+						fmt.glyphs[i].y = y + yOffset;
+						fmt.glyphs[i].w = w;
+						fmt.glyphs[i].h = h;
+						
+						if (x < fmt.x0) fmt.x0 = x;
+						if (x+w > fmt.x1) fmt.x1 = x+w;
+						if (y < fmt.y0) fmt.y0 = y;
+						if (y + h > fmt.y1) fmt.y1 = y + h;
+						
+						pen += (int)(m_spacingMultiplier * fgl.advance);
+						gotit = true;
+						break;
+					}		
+				}
+				
+				if (gotit)
+				{
+					continue;
+				}
+				
+				// rescale into possible uncropped texture
+				float uo = fmt.texture.u0;
+				float us = fmt.texture.u1 - fmt.texture.u0;
+				float vo = fmt.texture.v0;
+				float vs = fmt.texture.v1 - fmt.texture.v0;
 
 				foreach (outki.FontGlyph fgl in f.Glyphs)
 				{
 					fmt.glyphs[i].w = -666;
-
 					if (fgl.glyph == gl)
 					{
 						fmt.glyphs[i].u0 = fgl.u0;
 						fmt.glyphs[i].v0 = fgl.v0;
 						fmt.glyphs[i].u1 = fgl.u1;
 						fmt.glyphs[i].v1 = fgl.v1;
+						
+						fmt.glyphs[i].u0 = fmt.glyphs[i].u0 * us + uo;
+						fmt.glyphs[i].v0 = fmt.glyphs[i].v0 * vs + vo;
+						fmt.glyphs[i].u1 = fmt.glyphs[i].u1 * us + uo;
+						fmt.glyphs[i].v1 = fmt.glyphs[i].v1 * vs + vo;
 
 						float x = (scaling * ((pen + fgl.bearingX) >> 6));
 						float y = (scaling * ((0 + fgl.bearingY) >> 6));
@@ -149,6 +209,7 @@ namespace CCGUI
 						fmt.glyphs[i].y = y + yOffset;
 						fmt.glyphs[i].w = w;
 						fmt.glyphs[i].h = h;
+						fmt.glyphs[i].texture = fmt.texture;
 
 						if (x < fmt.x0) fmt.x0 = x;
 						if (x+w > fmt.x1) fmt.x1 = x+w;
@@ -159,20 +220,6 @@ namespace CCGUI
 						break;
 					}
 				}
-			}
-
-			// rescale into possible uncropped texture
-			float uo = fmt.texture.u0;
-			float us = fmt.texture.u1 - fmt.texture.u0;
-			float vo = fmt.texture.v0;
-			float vs = fmt.texture.v1 - fmt.texture.v0;
-
-			for (int i = 0; i < text.Length; i++)
-			{
-				fmt.glyphs[i].u0 = fmt.glyphs[i].u0 * us + uo;
-				fmt.glyphs[i].v0 = fmt.glyphs[i].v0 * vs + vo;
-				fmt.glyphs[i].u1 = fmt.glyphs[i].u1 * us + uo;
-				fmt.glyphs[i].v1 = fmt.glyphs[i].v1 * vs + vo;
 			}
 
 			return fmt;
@@ -198,10 +245,13 @@ namespace CCGUI
 			{
 				if (ft.glyphs[i].w == -666)
 					continue;
+					
+				if (i == 0)
+					UIRenderer.DrawTexture(ft.glyphs[i].texture, 0, 0, 128, 128);
 
 				float xp = x0 + ft.glyphs[i].x;
 				float yp = y0 + ft.glyphs[i].y;
-				UIRenderer.DrawTextureUV(ft.texture, xp, yp, xp + ft.glyphs[i].w, yp + ft.glyphs[i].h, ft.glyphs[i].u0, ft.glyphs[i].v0, ft.glyphs[i].u1, ft.glyphs[i].v1);
+				UIRenderer.DrawTextureUV(ft.glyphs[i].texture, xp, yp, xp + ft.glyphs[i].w, yp + ft.glyphs[i].h, ft.glyphs[i].u0, ft.glyphs[i].v0, ft.glyphs[i].u1, ft.glyphs[i].v1);
 			}
 
 			UIRenderer.SetColor(restoreColor);

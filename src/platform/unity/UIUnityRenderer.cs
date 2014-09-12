@@ -71,6 +71,15 @@ public class UIRenderer
 		return ResolveTextureUV(tex, 0, 0, 1, 1);
 	}
 	
+	public static LoadedTexture DynamicTexture(UnityEngine.Texture2D tex)
+	{
+		LoadedTexture ld = new LoadedTexture();
+		ld.unityTexture = tex;
+		ld.material = new Material(TexturedShader);
+		ld.material.mainTexture = ld.unityTexture;
+		return ld;
+	}
+	
 	public static LoadedTexture LoadTexture(outki.Texture tex)
 	{
 		string imgPath = null;

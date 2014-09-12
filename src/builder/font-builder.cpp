@@ -203,8 +203,8 @@ struct fontbuilder : putki::builder::handler_i
 					{
 						for (int x=0;x	<out_width;x++)
 						{
-							// outBmp[y*out_width+x] = (x^y) & 1 ? 0xff101010 : 0xff808080;
-							outBmp[y*out_width+x] = 0x00ffffff;
+							outBmp[y*out_width+x] = (x^y) & 1 ? 0xff101010 : 0xff808080;
+							//outBmp[y*out_width+x] = 0x00ffffff;
 						}
 					}
 				}
@@ -248,7 +248,8 @@ struct fontbuilder : putki::builder::handler_i
 						{
 							for (int x=0;x<g.w;x++)
 							{
-								outBmp[out_width * (out.y + y + border) + (out.x + x + border)] = g.data[g.w * y + x] * 0x01000000 | 0xffffff;
+//								outBmp[out_width * (out.y + y + border) + (out.x + x + border)] = g.data[g.w * y + x] * 0x01000000 | 0xffffff;
+								outBmp[out_width * (out.y + y + border) + (out.x + x + border)] = g.data[g.w * y + x] * 0x010101 | 0xff000000;//| 0xffffff;
 							}
 						}
 					}

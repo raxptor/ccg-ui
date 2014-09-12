@@ -23,7 +23,7 @@ FontGlyphPixData [in, out] non-instantiable
 	int bearingY
 	int pixelWidth
 	int pixelHeight
-	int[] pixelData
+	byte[] pixelData
 }
 
 FontOutput [in, out] non-instantiable

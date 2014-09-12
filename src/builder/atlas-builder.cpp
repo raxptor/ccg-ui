@@ -157,6 +157,17 @@ struct atlasbuilder : putki::builder::handler_i
 			else
 			{
 				const char *path = atlas->Inputs[i]->Source.c_str();
+				const char *obj_path = putki::db::pathof(input, atlas->Inputs[i]);
+				if (obj_path)
+				{
+					putki::build_db::add_input_dependency(record, obj_path);
+				}
+				else
+				{
+					std::cerr << "COULD NOT RESOLVE PATH POINTED TO IN LIST" << std::endl;
+					std::cerr << "INPUT DEPENDENCIES WILL NOT WORK PROPERLY" << std::endl;
+				}
+
 				putki::build_db::add_external_resource_dependency(record, path, putki::resource::signature(builder, path).c_str());
 
 				loaded.push_back(png);

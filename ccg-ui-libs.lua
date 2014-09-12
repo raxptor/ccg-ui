@@ -1,6 +1,6 @@
 
 	dofile "external/libpng/premake.lua"
-	dofile "external/freetype-2.5.0.1/premake.lua"
+	dofile "external/freetype-2.5.3/premake.lua"
 
 	CCGUI_PATH = path.getdirectory(_SCRIPT)
 
@@ -36,7 +36,7 @@
 		includedirs { "src" }
 		includedirs ( PUTKI_LIB_INCLUDES )
 		includedirs { "external/libpng"}
-		includedirs { "external/freetype-2.5.0.1/include"}
+		includedirs { "external/freetype-2.5.3/include"}
 
 		files { "src/builder/**.*" }
 		files { "src/putki/**.*" }

@@ -203,8 +203,8 @@ struct fontbuilder : putki::builder::handler_i
 					{
 						for (int x=0;x	<out_width;x++)
 						{
-							outBmp[y*out_width+x] = (x^y) & 1 ? 0xff101010 : 0xff808080;
-							//outBmp[y*out_width+x] = 0x00ffffff;
+							//outBmp[y*out_width+x] = (x^y) & 1 ? 0xff101010 : 0xff808080;
+							outBmp[y*out_width+x] = 0x0;
 						}
 					}
 				}
@@ -215,20 +215,6 @@ struct fontbuilder : putki::builder::handler_i
 					rbp::Rect const &out = packedRects[k];
 
 					// insert into output.
-					inki::FontGlyph fg;
-					fg.glyph = font->Characters[packedRects[k].id];
-					fg.u0 = float(out.x + border) / float(out_width);
-					fg.v0 = float(out.y + border) / float(out_height);
-					fg.u1 = float(out.x + border + g.w) / float(out_width);
-					fg.v1 = float(out.y + border + g.h) / float(out_height);
-					fg.pixelWidth = g.w;
-					fg.pixelHeight = g.h;
-					fg.bearingX = g.bearingX;
-					fg.bearingY = -g.bearingY;
-					fg.advance = g.advance;
-
-					up.Glyphs.push_back(fg);
-
 					if (outBmp)
 					{
 						inki::FontGlyph fg;
@@ -248,8 +234,7 @@ struct fontbuilder : putki::builder::handler_i
 						{
 							for (int x=0;x<g.w;x++)
 							{
-//								outBmp[out_width * (out.y + y + border) + (out.x + x + border)] = g.data[g.w * y + x] * 0x01000000 | 0xffffff;
-								outBmp[out_width * (out.y + y + border) + (out.x + x + border)] = g.data[g.w * y + x] * 0x010101 | 0xff000000;//| 0xffffff;
+								outBmp[out_width * (out.y + y + border) + (out.x + x + border)] = g.data[g.w * y + x] * 0x01000000 | 0xffffff;
 							}
 						}
 					}

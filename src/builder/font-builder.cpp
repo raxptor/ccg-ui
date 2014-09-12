@@ -194,13 +194,18 @@ struct fontbuilder : putki::builder::handler_i
 					}
 				}
 
-				unsigned int * outBmp = new unsigned int[out_width * out_height];
-				for (int y=0;y<out_height;y++)
+				unsigned int * outBmp = 0;
+
+				if (font->TextureConfiguration)
 				{
-					for (int x=0;x  <out_width;x++)
+					outBmp = new unsigned int[out_width * out_height];
+					for (int y=0;y<out_height;y++)
 					{
-						// outBmp[y*out_width+x] = (x^y) & 1 ? 0xff101010 : 0xff808080;
-						outBmp[y*out_width+x] = 0x00ffffff;
+						for (int x=0;x	<out_width;x++)
+						{
+							// outBmp[y*out_width+x] = (x^y) & 1 ? 0xff101010 : 0xff808080;
+							outBmp[y*out_width+x] = 0x00ffffff;
+						}
 					}
 				}
 
@@ -224,37 +229,70 @@ struct fontbuilder : putki::builder::handler_i
 
 					up.Glyphs.push_back(fg);
 
-					for (int y=0;y<g.h;y++)
+					if (outBmp)
 					{
-						for (int x=0;x<g.w;x++)
+						inki::FontGlyph fg;
+						fg.glyph = font->Characters[packedRects[k].id];
+						fg.u0 = float(out.x + border) / float(out_width);
+						fg.v0 = float(out.y + border) / float(out_height);
+						fg.u1 = float(out.x + border + g.w) / float(out_width);
+						fg.v1 = float(out.y + border + g.h) / float(out_height);
+						fg.pixelWidth = g.w;
+						fg.pixelHeight = g.h;
+						fg.bearingX = g.bearingX;
+						fg.bearingY = - g.bearingY;
+						fg.advance = g.advance;
+						up.Glyphs.push_back(fg);
+
+						for (int y=0;y<g.h;y++)
 						{
-							outBmp[out_width * (out.y + y + border) + (out.x + x + border)] = g.data[g.w * y + x] * 0x01000000 | 0xffffff;
+							for (int x=0;x<g.w;x++)
+							{
+								outBmp[out_width * (out.y + y + border) + (out.x + x + border)] = g.data[g.w * y + x] * 0x01000000 | 0xffffff;
+							}
 						}
+					}
+
+					if (font->OutputPixelData)
+					{
+						// These do not have any u/v data, only the pixel data itself for run-time atlas generation/rendering.
+						inki::FontGlyphPixData pd;
+						pd.glyph = font->Characters[packedRects[k].id];
+						pd.pixelWidth = g.w;
+						pd.pixelHeight = g.h;
+						pd.bearingX = g.bearingX;
+						pd.bearingY = - g.bearingY;
+						pd.advance = g.advance;
+						for (int l=0;l<g.w*g.h;l++)
+							pd.pixelData.push_back(g.data[l]);
+						up.PixGlyphs.push_back(pd);
 					}
 				}
 
-				std::stringstream ss;
-				ss << path << "_" << font->PixelSizes[sz] << "_glyphs";
-
-				std::string outpath = ss.str();
-				std::string output_atlas_path = ss.str() + ".png";
-				output_atlas_path = ccgui::pngutil::write_to_temp(builder, output_atlas_path.c_str(), outBmp, out_width, out_height);
-
 				// create & insert texture.
+				if (outBmp)
 				{
+					std::stringstream ss;
+					ss << path << "_" << font->PixelSizes[sz] << "_glyphs";
+
+					std::string outpath = ss.str();
+					std::string output_atlas_path = ss.str() + ".png";
+					output_atlas_path = ccgui::pngutil::write_to_temp(builder, output_atlas_path.c_str(), outBmp, out_width, out_height);
+
 					// create new texture.
 					inki::Texture *texture = inki::Texture::alloc();
 					texture->Source = output_atlas_path;
 					texture->Configuration = font->TextureConfiguration;
-					putki::db::insert(output, outpath.c_str(), inki::Texture::th(), texture);
 
 					// give font the texture.
 					up.OutputTexture = texture;
-					font->Outputs.push_back(up);
 
 					// add it so it will be built.
+					putki::db::insert(output, outpath.c_str(), inki::Texture::th(), texture);
 					putki::build_db::add_output(record, outpath.c_str(), builder_version);
 				}
+
+				font->Outputs.push_back(up);
 			}
 
 			return false;

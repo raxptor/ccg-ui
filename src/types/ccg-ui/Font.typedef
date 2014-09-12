@@ -12,12 +12,25 @@ FontGlyph [in, out] non-instantiable
 	float v1
 	int pixelWidth
 	int pixelHeight
+	int[] pixelData
+}
+
+FontGlyphPixData [in, out] non-instantiable
+{
+	int glyph
+	int advance
+	int bearingX
+	int bearingY
+	int pixelWidth
+	int pixelHeight
+	int[] pixelData
 }
 
 FontOutput [in, out] non-instantiable
 {
 	[hidden] ptr Texture OutputTexture
 	[hidden] FontGlyph[] Glyphs
+	[hidden] FontGlyphPixData[] PixGlyphs
 	[hidden] int[] KerningCharL
 	[hidden] int[] KerningCharR
 	[hidden] int[] KerningOfs
@@ -30,6 +43,7 @@ Font [in, out]
 {
 	file Source
 	bool Latin1 = true
+	[no-out] bool OutputPixelData = false
 	[no-out] int[] Characters
 	[no-out] int[] PixelSizes
 	ptr TextureConfiguration TextureConfiguration

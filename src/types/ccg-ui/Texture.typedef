@@ -59,10 +59,7 @@ TextureOutputFormatOpenGL : TextureOutputFormat
 
 TextureConfiguration [in, out] rtti
 {
-	auxptr TextureOutputFormat OutputFormat
-	auxptr TextureOutputFormat OutputFormatCSharp
-	auxptr TextureOutputFormat OutputFormatMacOSX
-	auxptr TextureOutputFormat OutputFormatWindows
+	[build-config] auxptr TextureOutputFormat OutputFormat
 }
 
 Texture [in, out] rtti

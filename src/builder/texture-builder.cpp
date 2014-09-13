@@ -85,15 +85,15 @@ struct texbuilder : putki::builder::handler_i
 			return false;
 		}
 
+		inki::TextureOutputFormat *outputFormat = config.OutputFormat(putki::builder::config(builder));
+
 		// If no output is needed
-		if (!config.OutputFormat)
+		if (!outputFormat)
 		{
-			std::cout << " => Texture has no output format set. Skipping generation" << std::endl;
+			std::cout << " => Texture has no output format set for config [" << putki::builder::config(builder) << "]. Skipping generation" << std::endl;
 			return false;
 		}
 
-		// TODO: Check overrides for other platforms
-		inki::TextureOutputFormat *outputFormat = config.OutputFormat;
 
 		int out_width, out_height;
 		resize(outputFormat->ResizeMode, pnginfo.width, pnginfo.height, &out_width, &out_height);

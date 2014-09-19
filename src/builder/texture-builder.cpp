@@ -1,6 +1,7 @@
 #include <putki/builder/build.h>
 #include <putki/builder/builder.h>
 #include <putki/builder/package.h>
+#include <putki/builder/log.h>
 #include <putki/builder/resource.h>
 #include <putki/builder/build-db.h>
 #include <putki/builder/db.h>
@@ -59,8 +60,6 @@ struct texbuilder : putki::builder::handler_i
 		// this is used for atlas lookups later.
 		texture->id = path;
 
-		std::cout << "Processing texture [" << path << "] source <" << texture->Source << ">" << std::endl;
-
 		// this object supplies its own defaults on initialisation
 		inki::TextureConfiguration config;
 		if (texture->Configuration)
@@ -90,7 +89,7 @@ struct texbuilder : putki::builder::handler_i
 		// If no output is needed
 		if (!outputFormat)
 		{
-			std::cout << " => Texture has no output format set for config [" << putki::builder::config(builder) << "]. Skipping generation" << std::endl;
+			RECORD_INFO(record, "No output format, skipping generation")
 			return false;
 		}
 
@@ -149,7 +148,7 @@ struct texbuilder : putki::builder::handler_i
 		if (out_width != png.width || out_height != png.height)
 		{
 			// only do uncrop
-			std::cout << "[texture-builder] - uncropping to " << out_width << "x" << out_height << std::endl;
+			RECORD_INFO(record, "Uncropping to " << out_width << "x" << out_height)
 			outData = new unsigned int[out_width * out_height];
 
 			for (int y=0;y<out_height;y++)
@@ -199,7 +198,7 @@ struct texbuilder : putki::builder::handler_i
 			pngObj->parent.u1 = u1;
 			pngObj->parent.v1 = v1;
 
-			std::cout << "[TextureOutputFormatPng] - Source image [" << png.width << "x" << png.height << "] => [" << texture->Width << "x" << texture->Height << "]" << std::endl;
+			RECORD_INFO(record, "[TextureOutputFormatPng] - Source image [" << png.width << "x" << png.height << "] => [" << texture->Width << "x" << texture->Height << "]")
 
 			ccgui::pngutil::write_to_output(builder, pngObj->PngPath.c_str(), outData, out_width, out_height);
 
@@ -253,7 +252,7 @@ struct texbuilder : putki::builder::handler_i
 			}
 			else
 			{
-				std::cout << "[jpeg] compressed " << out_width << "x" << out_height << " to " << buf_size << " bytes." << std::endl;
+				RECORD_INFO(record, "[jpeg] compressed " << out_width << "x" << out_height << " to " << buf_size << " bytes.")
 				putki::resource::save_output(builder, jpgObj->JpegPath.c_str(), databuffer, buf_size);
 			}
 

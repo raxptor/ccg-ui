@@ -3,6 +3,7 @@
 #include <putki/builder/package.h>
 #include <putki/builder/resource.h>
 #include <putki/builder/build-db.h>
+#include <putki/builder/log.h>
 #include <putki/builder/db.h>
 
 #include <iostream>
@@ -124,7 +125,6 @@ struct atlasbuilder : putki::builder::handler_i
 	virtual bool handle(putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj, putki::db::data *output, int obj_phase)
 	{
 		inki::Atlas *atlas = (inki::Atlas *) obj;
-		std::cout << "Processing atlas [" << path << "]" << std::endl;
 
 		std::vector<ccgui::pngutil::loaded_png> loaded;
 		std::vector<rbp::InputRect> inputRects;
@@ -145,7 +145,7 @@ struct atlasbuilder : putki::builder::handler_i
 		{
 			if (!atlas->Inputs[i])
 			{
-				std::cout << "*** Blank entry in atlas at slot " << i << std::endl;
+				RECORD_WARNING(record, "Blank entry in atlas at slot " << i)
 				continue;
 			}
 
@@ -187,7 +187,7 @@ struct atlasbuilder : putki::builder::handler_i
 					max_height = ir.height;
 				}
 
-				std::cout << "      " << atlas->Inputs[i]->Source.c_str() << " loaded [" << png.width << "x" << png.height << "]" << std::endl;
+				RECORD_INFO(record, " - " << atlas->Inputs[i]->Source.c_str() << " loaded [" << png.width << "x" << png.height << "]")
 			}
 		}
 
@@ -261,7 +261,7 @@ struct atlasbuilder : putki::builder::handler_i
 			ao.Height = out_height;
 			ao.Scale = g_outputTexConf[i].scale;
 
-			std::cout << "[atlas-builder] Packing into " << out_width << "x" << out_height << std::endl;
+			RECORD_INFO(record, "Packing into " << out_width << "x" << out_height)
 
 			for (unsigned int k=0;k<packedRects.size();k++)
 			{

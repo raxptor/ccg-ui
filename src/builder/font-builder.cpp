@@ -3,6 +3,7 @@
 #include <putki/builder/package.h>
 #include <putki/builder/resource.h>
 #include <putki/builder/build-db.h>
+#include <putki/builder/log.h>
 #include <putki/builder/db.h>
 
 #include <iostream>
@@ -40,7 +41,7 @@ struct fontbuilder : putki::builder::handler_i
 	{
 		inki::Font *font = (inki::Font *) obj;
 
-		std::cout << "Building font [" << path << "] with source [" << font->Source << "]" << std::endl;
+		RECORD_INFO(record, "Source is " << font->Source)
 
 		if (font->Latin1)
 		{
@@ -62,8 +63,6 @@ struct fontbuilder : putki::builder::handler_i
 		long long fnt_len;
 		if (putki::resource::load(builder, font->Source.c_str(), &fnt_data, &fnt_len))
 		{
-			std::cout << "Loaded file with size " << fnt_len << std::endl;
-
 			FT_Library ft;
 			if (FT_Init_FreeType(&ft))
 			{

@@ -93,6 +93,7 @@ namespace CCGUI
 				fmt.glyphs[i].u1 = 0;
 				fmt.glyphs[i].v1 = 0;
 				fmt.glyphs[i].wordbreak = (gl == ' ');
+				fmt.glyphs[i].w = -666;
 
 				if (pen > 0)
 				{
@@ -139,7 +140,6 @@ namespace CCGUI
 					if (m_cache == null)
 						break;
 
-					fmt.glyphs[i].w = -666;
 					if (fgl.glyph == gl)
 					{
 						string glyphId = "fnt-" + f.PixelSize + "-" + fgl.glyph; 
@@ -187,7 +187,6 @@ namespace CCGUI
 
 				foreach (outki.FontGlyph fgl in f.Glyphs)
 				{
-					fmt.glyphs[i].w = -666;
 					if (fgl.glyph == gl)
 					{
 						fmt.glyphs[i].u0 = fgl.u0;
@@ -246,9 +245,6 @@ namespace CCGUI
 				if (ft.glyphs[i].w == -666)
 					continue;
 					
-				if (i == 0)
-					UIRenderer.DrawTexture(ft.glyphs[i].texture, 0, 0, 128, 128);
-
 				float xp = x0 + ft.glyphs[i].x;
 				float yp = y0 + ft.glyphs[i].y;
 				UIRenderer.DrawTextureUV(ft.glyphs[i].texture, xp, yp, xp + ft.glyphs[i].w, yp + ft.glyphs[i].h, ft.glyphs[i].u0, ft.glyphs[i].v0, ft.glyphs[i].u1, ft.glyphs[i].v1);

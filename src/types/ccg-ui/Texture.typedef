@@ -11,19 +11,17 @@ TextureOutput [in, out] rtti non-instantiable
 
 TextureOutputPng : TextureOutput non-instantiable
 {
-	string PngPath
+
 }
 
 TextureOutputJpeg : TextureOutput non-instantiable
 {
-	string JpegPath
+
 }
 
-TextureOutputOpenGL : TextureOutput non-instantiable
+TextureOutputRaw : TextureOutput non-instantiable
 {
-	byte[] Bytes
-	int Width
-	int Height
+
 }
 
 enum TextureResizeMode
@@ -50,7 +48,7 @@ TextureOutputFormatJpeg : TextureOutputFormat
 	bool Twopass = false
 }
 
-TextureOutputFormatOpenGL : TextureOutputFormat
+TextureOutputFormatRaw : TextureOutputFormat
 {
 
 }

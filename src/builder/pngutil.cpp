@@ -15,12 +15,6 @@ namespace ccgui
 {
 	namespace pngutil
 	{
-		struct write_buffer
-		{
-			char *output;
-			size_t size;
-		};
-
 		namespace
 		{
 			void write(png_structp png_ptr, png_bytep data, png_size_t length)

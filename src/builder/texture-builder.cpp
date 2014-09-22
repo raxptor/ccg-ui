@@ -106,24 +106,6 @@ struct texbuilder : putki::builder::handler_i
 		const float u1 = float(pnginfo.width) / float(out_width);
 		const float v1 = float(pnginfo.height) / float(out_height);
 
-		if (outputFormat->rtti_type_ref() == inki::TextureOutputFormatPathOnly::type_id())
-		{
-			// just write a "fake" png entry with the desired path.
-			inki::TextureOutputFormatPathOnly *fmt = (inki::TextureOutputFormatPathOnly*) outputFormat;
-			inki::TextureOutputPng *fakeTex = inki::TextureOutputPng::alloc();
-			fakeTex->PngPath = std::string("Resources/") + path + fmt->FileEnding;
-			fakeTex->parent.u0 = u0;
-			fakeTex->parent.v0 = v0;
-			fakeTex->parent.u1 = u1;
-			fakeTex->parent.v1 = v1;
-			texture->Output = &fakeTex->parent;
-
-			std::string path_res(path);
-			path_res.append("_out");
-			putki::db::insert(output, path_res.c_str(), inki::TextureOutputPng::th(), fakeTex);
-			putki::build_db::add_output(record, path_res.c_str(), builder_version);
-		}
-
 		// load
 		ccgui::pngutil::loaded_png png;
 		if (!ccgui::pngutil::load(putki::resource::real_path(builder, texture->Source.c_str()).c_str(), &png))
@@ -166,28 +148,38 @@ struct texbuilder : putki::builder::handler_i
 			}
 		}
 
-		if (outputFormat->rtti_type_ref() == inki::TextureOutputFormatOpenGL::type_id())
+		std::string path_res(path);
+		path_res.append("_out");
+		std::string path_res_data(path_res + "_data");
+
+		if (true || outputFormat->rtti_type_ref() == inki::TextureOutputFormatOpenGL::type_id())
 		{
 			inki::TextureOutputOpenGL *glTex = inki::TextureOutputOpenGL::alloc();
 			glTex->Width = out_width;
 			glTex->Height = out_height;
+			
+			texture->Output = &glTex->parent;
+			texture->Output->Data = inki::DataContainer::alloc();
+			texture->Output->Data->Config = outputFormat->StorageConfiguration;
+			std::vector<unsigned char> & bytesOut = texture->Output->Data->Bytes;
 
 			// RGBA
 			for (int i=0;i<out_width * png.height;i++)
 			{
 				// RGBA
-				glTex->Bytes.push_back((outData[i] >> 16) & 0xff);
-				glTex->Bytes.push_back((outData[i] >>  8) & 0xff);
-				glTex->Bytes.push_back((outData[i] >>  0) & 0xff);
-				glTex->Bytes.push_back((outData[i] >> 24) & 0xff);
+				bytesOut.push_back((outData[i] >> 16) & 0xff);
+				bytesOut.push_back((outData[i] >>  8) & 0xff);
+				bytesOut.push_back((outData[i] >>  0) & 0xff);
+				bytesOut.push_back((outData[i] >> 24) & 0xff);
 			}
-			texture->Output = &glTex->parent;
 
-			std::string path_res(path);
-			path_res.append("_out");
+			
 			putki::db::insert(output, path_res.c_str(), inki::TextureOutputOpenGL::th(), glTex);
+			putki::db::insert(output, path_res_data.c_str(), inki::DataContainer::th(), texture->Output->Data);
 			putki::build_db::add_output(record, path_res.c_str(), builder_version);
+			putki::build_db::add_output(record, path_res_data.c_str(), builder_version);
 		}
+		/*
 		else if (outputFormat->rtti_type_ref() == inki::TextureOutputFormatPng::type_id())
 		{
 			// these are the direct load textures.
@@ -263,6 +255,7 @@ struct texbuilder : putki::builder::handler_i
 			putki::db::insert(output, path_res.c_str(), inki::TextureOutputJpeg::th(), jpgObj);
 			putki::build_db::add_output(record, path_res.c_str(), builder_version);
 		}
+		*/
 
 		if (outData != png.pixels)
 		{

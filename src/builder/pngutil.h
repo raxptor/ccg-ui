@@ -9,6 +9,14 @@ namespace ccgui
 		std::string write_to_temp(putki::builder::data *builder, const char *path, unsigned int *pixbuf, unsigned int width, unsigned int height);
 		std::string write_to_output(putki::builder::data *builder, const char *path, unsigned int *pixbuf, unsigned int width, unsigned int height);
 
+		struct write_buffer
+		{
+			char *output;
+			size_t size;
+		};
+		
+		write_buffer write_to_mem(unsigned int *pixbuf, unsigned int width, unsigned int height);
+
 		struct loaded_png
 		{
 			unsigned int *pixels;

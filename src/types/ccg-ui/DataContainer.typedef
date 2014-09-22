@@ -1,0 +1,38 @@
+StreamingPackage [in, out]
+{
+	string PackagePath
+}
+
+DataContainerOutput [in, out] rtti non-instantiable
+{
+
+}
+
+DataContainerConfiguration [in, out] rtti
+{
+	ptr StreamingPackage Streaming
+	bool Discard
+}
+
+DataContainer [in, out] rtti non-instantiable
+{
+	[no-out] ptr DataContainerConfiguration Config
+	[no-out] byte[] Bytes
+	[hidden] ptr DataContainerOutput Output
+}
+
+DataContainerOutputEmbedded : DataContainerOutput non-instantiable
+{
+	byte[] Bytes	
+}
+
+DataContainerOutputStreaming : DataContainerOutput non-instantiable
+{
+	ptr StreamingPackage Package
+	string ResourceID
+}
+
+DataContainerOutputNull : DataContainerOutput non-instantiable
+{
+
+}

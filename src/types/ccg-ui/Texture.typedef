@@ -1,3 +1,4 @@
+#include DataContainer.typedef
 
 TextureOutput [in, out] rtti non-instantiable
 {
@@ -5,6 +6,7 @@ TextureOutput [in, out] rtti non-instantiable
 	float v0
 	float u1
 	float v1
+	ptr DataContainer Data
 }
 
 TextureOutputPng : TextureOutput non-instantiable
@@ -32,13 +34,9 @@ enum TextureResizeMode
 
 TextureOutputFormat rtti non-instantiable
 {
+	[no-out] ptr DataContainerConfiguration StorageConfiguration
 	enum TextureResizeMode ResizeMode = RESIZE_NONE
 	bool PremultiplyAlpha = true
-}
-
-TextureOutputFormatPathOnly : TextureOutputFormat
-{
-	string FileEnding
 }
 
 TextureOutputFormatPng : TextureOutputFormat
@@ -54,7 +52,7 @@ TextureOutputFormatJpeg : TextureOutputFormat
 
 TextureOutputFormatOpenGL : TextureOutputFormat
 {
-	int needs_refactoring
+
 }
 
 TextureConfiguration [in, out] rtti

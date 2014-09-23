@@ -37,7 +37,7 @@ struct fontbuilder : putki::builder::handler_i
 		return builder_version;
 	}
 
-	virtual bool handle(putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj, putki::db::data *output, int obj_phase)
+	virtual bool handle(putki::builder::build_context *context, putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj)
 	{
 		inki::Font *font = (inki::Font *) obj;
 
@@ -66,14 +66,14 @@ struct fontbuilder : putki::builder::handler_i
 			FT_Library ft;
 			if (FT_Init_FreeType(&ft))
 			{
-				putki::builder::build_error(builder, "Could not initialize freetype");
+				RECORD_WARNING(record, "Could not initialize freetype");
 				return false;
 			}
 
 			FT_Face face;
 			if (FT_New_Memory_Face(ft, (const FT_Byte *)fnt_data, (FT_Long)fnt_len, 0, &face))
 			{
-				putki::builder::build_error(builder, "Could not load font face");
+				RECORD_WARNING(record, "Could not load font face");
 				return false;
 			}
 
@@ -81,7 +81,7 @@ struct fontbuilder : putki::builder::handler_i
 			{
 				if (FT_Set_Pixel_Sizes(face, 0, font->PixelSizes[sz]))
 				{
-					putki::builder::build_error(builder, "Could not set char or pixel size.");
+					RECORD_WARNING(record, "Could not set char or pixel size.");
 					return false;
 				}
 
@@ -102,13 +102,13 @@ struct fontbuilder : putki::builder::handler_i
 					int idx = FT_Get_Char_Index(face, font->Characters[i]);
 					if (FT_Load_Glyph(face, idx, FT_LOAD_NO_BITMAP))
 					{
-						putki::builder::build_error(builder, "Could not load glyph face.");
+						RECORD_WARNING(record, "Could not load glyph face.");
 						return false;
 					}
 
 					if (FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL))
 					{
-						putki::builder::build_error(builder, "Could not render glyph.");
+						RECORD_WARNING(record, "Could not render glyph.");
 						continue;
 					}
 
@@ -274,8 +274,7 @@ struct fontbuilder : putki::builder::handler_i
 					up.OutputTexture = texture;
 
 					// add it so it will be built.
-					putki::db::insert(output, outpath.c_str(), inki::Texture::th(), texture);
-					putki::build_db::add_output(record, outpath.c_str(), builder_version);
+					add_output(context, record, outpath.c_str(), texture);
 				}
 
 				font->Outputs.push_back(up);
@@ -285,7 +284,7 @@ struct fontbuilder : putki::builder::handler_i
 		}
 		else
 		{
-			putki::builder::build_error(builder, "Load failed.");
+			RECORD_WARNING(record, "Load failed.");
 		}
 
 		return false;
@@ -295,5 +294,5 @@ struct fontbuilder : putki::builder::handler_i
 void register_font_builder(putki::builder::data *builder)
 {
 	static fontbuilder fb;
-	putki::builder::add_data_builder(builder, "Font", putki::builder::PHASE_INDIVIDUAL, &fb);
+	putki::builder::add_data_builder(builder, "Font", &fb);
 }

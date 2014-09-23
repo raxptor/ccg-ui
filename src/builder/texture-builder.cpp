@@ -171,7 +171,7 @@ struct texbuilder : putki::builder::handler_i
 				bytesOut.push_back((outData[i] >> 24) & 0xff);
 			}
 			
-			add_output(context, record, path_res.c_st(), rawTex);
+			add_output(context, record, path_res.c_str(), rawTex);
 			add_output(context, record, path_res_data.c_str(), texture->Output->Data);
 		}
 		else if (outputFormat->rtti_type_ref() == inki::TextureOutputFormatPng::type_id())
@@ -194,7 +194,7 @@ struct texbuilder : putki::builder::handler_i
 			texture->Output->Data->Bytes.insert(texture->Output->Data->Bytes.begin(), (unsigned char*)wb.output, (unsigned char*)(wb.output + wb.size));
 			texture->Output->Data->FileType = "png";
 			
-			add_output(context, record, path_res.c_st(), pngObj);
+			add_output(context, record, path_res.c_str(), pngObj);
 			add_output(context, record, path_res_data.c_str(), texture->Output->Data);
 		}
 		else if (outputFormat->rtti_type_ref() == inki::TextureOutputFormatJpeg::type_id())
@@ -245,7 +245,7 @@ struct texbuilder : putki::builder::handler_i
 			texture->Output->Data->Bytes.insert(texture->Output->Data->Bytes.begin(), (unsigned char*)outData, (unsigned char*)(outData + buf_size));
 			texture->Output->Data->FileType = "jpeg";
 			
-			add_output(context, record, path_res.c_st(), jpgObj);
+			add_output(context, record, path_res.c_str(), jpgObj);
 			add_output(context, record, path_res_data.c_str(), texture->Output->Data);
 		
 			delete [] databuffer;

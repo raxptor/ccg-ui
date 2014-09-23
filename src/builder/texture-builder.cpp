@@ -16,7 +16,7 @@
 #include "textureconfig.h"
 
 namespace {
-	const char *builder_version = "texture-builder-1";
+	const char *builder_version = "texture-builder-2";
 }
 
 struct texbuilder : putki::builder::handler_i
@@ -119,9 +119,9 @@ struct texbuilder : putki::builder::handler_i
 			for (int i=0;i<png.width*png.height;i++)
 			{
 				unsigned char *ptr = (unsigned char*)&png.pixels[i];
-				ptr[1] = ptr[1] * ptr[0] / 255;
-				ptr[2] = ptr[2] * ptr[0] / 255;
-				ptr[3] = ptr[3] * ptr[0] / 255;
+				ptr[0] = ptr[0] * ptr[3] / 255;
+				ptr[1] = ptr[1] * ptr[3] / 255;
+				ptr[2] = ptr[2] * ptr[3] / 255;
 			}
 		}
 

@@ -90,10 +90,10 @@ namespace ccgui
 							const outki::AtlasEntry *entry = &output->Entries[k];
 							if (!strcmp(entry->id, texture->id))
 							{
-								out_resolved->u0 = entry->u0;
-								out_resolved->v0 = entry->v0;
-								out_resolved->u1 = entry->u1;
-								out_resolved->v1 = entry->v1;
+								out_resolved->u0 = entry->u0 + (entry->u1 - entry->u0) * u0;
+								out_resolved->v0 = entry->v0 + (entry->v1 - entry->v0) * v0;
+								out_resolved->u1 = entry->u0 + (entry->u1 - entry->u0) * u1;
+								out_resolved->v1 = entry->v0 + (entry->v1 - entry->v0) * v1;
 								out_resolved->texture = output->Texture;
 								return true;
 							}
@@ -104,10 +104,10 @@ namespace ccgui
 
 			if (texture->Output)
 			{
-				out_resolved->u0 = 0;
-				out_resolved->v0 = 0;
-				out_resolved->u1 = 1;
-				out_resolved->v1 = 1;
+				out_resolved->u0 = u0;
+				out_resolved->v0 = v0;
+				out_resolved->u1 = u1;
+				out_resolved->v1 = v1;
 				out_resolved->texture = texture;
 				return true;
 			}

@@ -50,8 +50,12 @@ namespace ccgui
 						{
 							continue;
 						}
-
-						rinfo->backend->tex_rect(g->texture, xs[x], ys[y], xs[x+1], ys[y+1], us[x], vs[y], us[x+1], vs[y+1], 0xffffffff);
+						
+						uiscreen::resolved_texture rt;
+						if (uiscreen::resolve_texture(rinfo->screen, g->texture, &rt, us[x], vs[y], us[x+1], vs[y+1]))
+						{
+							rinfo->backend->tex_rect(rt.texture, xs[x], ys[y], xs[x+1], ys[y+1], rt.u0, rt.v0, rt.u1, rt.v1, 0xffffffff);
+						}
 					}
 				}
 			}

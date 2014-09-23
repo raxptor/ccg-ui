@@ -47,6 +47,8 @@ struct databuilder : putki::builder::handler_i
 						return false;
 					}
 					
+					putki::build_db::add_input_dependency(record, putki::db::pathof(input, conf->FileBase));
+				
 					std::string filePath = conf->FileBase->PathPrefix;
 					if (!filePath.empty() && filePath[filePath.size()-1] != '/')
 						filePath.append("/");

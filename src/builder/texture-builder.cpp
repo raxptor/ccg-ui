@@ -53,7 +53,7 @@ struct texbuilder : putki::builder::handler_i
 		return builder_version;
 	}
 
-	virtual bool handle(putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj, putki::db::data *output, int obj_phase)
+	virtual bool handle(putki::builder::build_context *context, putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj)
 	{
 		inki::Texture *texture = (inki::Texture *) obj;
 
@@ -80,7 +80,7 @@ struct texbuilder : putki::builder::handler_i
 		}
 		else
 		{
-			putki::builder::build_error(builder, "Could not load source file!");
+			RECORD_WARNING(record, "Could not load source file!");
 			return false;
 		}
 
@@ -120,15 +120,14 @@ struct texbuilder : putki::builder::handler_i
 
 			std::string path_res(path);
 			path_res.append("_out");
-			putki::db::insert(output, path_res.c_str(), inki::TextureOutputPng::th(), fakeTex);
-			putki::build_db::add_output(record, path_res.c_str(), builder_version);
+			add_output(context, record, path_res.c_str(), fakeTex);
 		}
 
 		// load
 		ccgui::pngutil::loaded_png png;
 		if (!ccgui::pngutil::load(putki::resource::real_path(builder, texture->Source.c_str()).c_str(), &png))
 		{
-			putki::builder::build_error(builder, "Failed to load source file!");
+			RECORD_WARNING(record, "Failed to load source file!");
 			return false;
 		}
 		
@@ -185,8 +184,8 @@ struct texbuilder : putki::builder::handler_i
 
 			std::string path_res(path);
 			path_res.append("_out");
-			putki::db::insert(output, path_res.c_str(), inki::TextureOutputOpenGL::th(), glTex);
-			putki::build_db::add_output(record, path_res.c_str(), builder_version);
+
+			add_output(context, record, path_res.c_str(), glTex);
 		}
 		else if (outputFormat->rtti_type_ref() == inki::TextureOutputFormatPng::type_id())
 		{
@@ -206,9 +205,8 @@ struct texbuilder : putki::builder::handler_i
 
 			std::string path_res(path);
 			path_res.append("_out");
-			putki::db::insert(output, path_res.c_str(), inki::TextureOutputPng::th(), pngObj);
 
-			putki::build_db::add_output(record, path_res.c_str(), builder_version);
+			add_output(context, record, path_res.c_str(), pngObj);
 		}
 		else if (outputFormat->rtti_type_ref() == inki::TextureOutputFormatJpeg::type_id())
 		{
@@ -248,7 +246,7 @@ struct texbuilder : putki::builder::handler_i
 
 			if (!jpge::compress_image_to_jpeg_file_in_memory(databuffer, buf_size, out_width, out_height, 4, (unsigned char*)outData, p))
 			{
-				putki::builder::build_error(builder, "JPEG compression failed");
+				RECORD_WARNING(record, "JPEG compression failed");
 			}
 			else
 			{
@@ -260,8 +258,7 @@ struct texbuilder : putki::builder::handler_i
 
 			std::string path_res(path);
 			path_res.append("_out");
-			putki::db::insert(output, path_res.c_str(), inki::TextureOutputJpeg::th(), jpgObj);
-			putki::build_db::add_output(record, path_res.c_str(), builder_version);
+			add_output(context, record, path_res.c_str(), jpgObj);
 		}
 
 		if (outData != png.pixels)
@@ -277,5 +274,5 @@ struct texbuilder : putki::builder::handler_i
 void register_texture_builder(putki::builder::data *builder)
 {
 	static texbuilder fb;
-	putki::builder::add_data_builder(builder, "Texture", putki::builder::PHASE_INDIVIDUAL, &fb);
+	putki::builder::add_data_builder(builder, "Texture", &fb);
 }

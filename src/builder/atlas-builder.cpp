@@ -122,7 +122,7 @@ struct atlasbuilder : putki::builder::handler_i
 		return builder_version;
 	}
 
-	virtual bool handle(putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj, putki::db::data *output, int obj_phase)
+	virtual bool handle(putki::builder::build_context *context, putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj)
 	{
 		inki::Atlas *atlas = (inki::Atlas *) obj;
 
@@ -152,7 +152,7 @@ struct atlasbuilder : putki::builder::handler_i
 			ccgui::pngutil::loaded_png png;
 			if (!ccgui::pngutil::load(putki::resource::real_path(builder, atlas->Inputs[i]->Source.c_str()).c_str(), &png))
 			{
-				putki::builder::build_error(builder, "Failed to load png");
+				RECORD_WARNING(record, "Failed to load png");
 			}
 			else
 			{
@@ -300,8 +300,8 @@ struct atlasbuilder : putki::builder::handler_i
 				inki::Texture *texture = inki::Texture::alloc();
 				texture->Source = output_atlas_path;
 				texture->Configuration = atlas->OutputConfiguration;
-				putki::db::insert(output, outpath.c_str(), inki::Texture::th(), texture);
-				putki::build_db::add_output(record, outpath.c_str(), builder_version);
+
+				add_output(context, record, outpath.c_str(), texture);
 
 				ao.Texture = texture;
 				atlas->Outputs.push_back(ao);
@@ -320,5 +320,5 @@ struct atlasbuilder : putki::builder::handler_i
 void register_atlas_builder(putki::builder::data *builder)
 {
 	static atlasbuilder fb;
-	putki::builder::add_data_builder(builder, "Atlas", putki::builder::PHASE_INDIVIDUAL, &fb);
+	putki::builder::add_data_builder(builder, "Atlas", &fb);
 }

@@ -4,6 +4,7 @@
 #include <ccg-ui/uiscreen.h>
 #include <ccg-ui/uicontext.h>
 #include <putki/liveupdate/liveupdate.h>
+#include <kosmos/render/render.h>
 
 #include <stdio.h>
 #include <iostream>
@@ -18,7 +19,7 @@ namespace ccgui
 
 			if (outki::UIGradientFill *g = fill->exact_cast<outki::UIGradientFill>())
 			{
-				rinfo->backend->gradient_rect(x0, y0, x1, y1, ccgui::col2int(&g->topleft),
+				kosmos::render::gradient_rect(x0, y0, x1, y1, ccgui::col2int(&g->topleft),
 				                              ccgui::col2int(&g->topright), ccgui::col2int(&g->bottomleft), ccgui::col2int(&g->bottomright));
 			}
 			else if (outki::UISlice9Fill *g = fill->exact_cast<outki::UISlice9Fill>())
@@ -56,7 +57,7 @@ namespace ccgui
 						uiscreen::resolved_texture rt;
 						if (uiscreen::resolve_texture(rinfo->screen, g->texture, &rt, us[x], vs[y], us[x+1], vs[y+1]))
 						{
-							rinfo->backend->tex_rect(rt.texture, xs[x], ys[y], xs[x+1], ys[y+1], rt.u0, rt.v0, rt.u1, rt.v1, 0xffffffff);
+							kosmos::render::tex_rect(rt.texture, xs[x], ys[y], xs[x+1], ys[y+1], rt.u0, rt.v0, rt.u1, rt.v1, 0xffffffff);
 						}
 					}
 				}

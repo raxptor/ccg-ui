@@ -1,9 +1,9 @@
 #pragma once
 
 #include <outki/types/ccg-ui/Screen.h>
-#include <ccg-ui/ccg-renderer.h>
 #include <ccg-ui/uicontext.h>
 #include <ccg-ui/uiwidget.h>
+#include <kosmos/render/render.h>
 
 namespace ccgui
 {
@@ -18,18 +18,17 @@ namespace ccgui
 
 		struct resolved_texture
 		{
-			outki::Texture *texture;
+			kosmos::render::loaded_texture *texture;
 			float u0, v0, u1, v1;
 		};
 
 		struct renderinfo
 		{
-			ccgui::render_api *backend;
 			ccgui::uiscreen::instance *screen;
 			ccgui::uicontext *context;
 		};
 
-		instance * create(outki::UIScreen *screen, render_api *rapi, uiwidget::widget_handler *optional_handler);
+		instance * create(outki::UIScreen *screen, uiwidget::widget_handler *optional_handler);
 		void draw(instance *d, uicontext *context, float x0, float y0, float x1, float y1);
 		void free(instance *r);
 

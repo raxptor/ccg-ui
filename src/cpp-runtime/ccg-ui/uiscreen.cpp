@@ -2,8 +2,10 @@
 
 #include <putki/liveupdate/liveupdate.h>
 #include <outki/types/ccg-ui/Elements.h>
+#include <kosmos/render/render.h>
 #include <ccg-ui/uielement.h>
 #include <ccg-ui/uiwidget.h>
+
 #include <vector>
 #include <math.h>
 #include <string.h>
@@ -12,18 +14,15 @@ namespace ccgui
 {
 	namespace uiscreen
 	{
-
 		struct instance
 		{
 			outki::UIScreen *data;
-			render_api *backend;
 			uiwidget::instance *root;
 		};
 
-		instance * create(outki::UIScreen *screen, render_api *rapi, uiwidget::widget_handler *optional_handler)
+		instance * create(outki::UIScreen *screen, uiwidget::widget_handler *optional_handler)
 		{
 			instance *inst = new instance();
-			inst->backend = rapi;
 			inst->data = screen;
 			inst->root = uiwidget::create(screen->Root, optional_handler);
 			return inst;
@@ -63,7 +62,6 @@ namespace ccgui
 			uiwidget::layout(d->root, _x0, _y0, _x1, _y1);
 
 			renderinfo ri;
-			ri.backend = d->backend;
 			ri.screen = d;
 			ri.context = context;
 
@@ -98,7 +96,7 @@ namespace ccgui
 								out_resolved->v0 = entry->v0 + (entry->v1 - entry->v0) * v0;
 								out_resolved->u1 = entry->u0 + (entry->u1 - entry->u0) * u1;
 								out_resolved->v1 = entry->v0 + (entry->v1 - entry->v0) * v1;
-								out_resolved->texture = output->Texture;
+								out_resolved->texture = kosmos::render::load_texture(output->Texture);
 								return true;
 							}
 						}
@@ -112,7 +110,7 @@ namespace ccgui
 				out_resolved->v0 = v0;
 				out_resolved->u1 = u1;
 				out_resolved->v1 = v1;
-				out_resolved->texture = texture;
+				out_resolved->texture = kosmos::render::load_texture(texture);
 				return true;
 			}
 

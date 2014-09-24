@@ -1,5 +1,6 @@
 #include <ccg-ui/uiwidget.h>
 #include <ccg-ui/uielement.h>
+#include <kosmos/render/render.h>
 #include <putki/liveupdate/liveupdate.h>
 
 #include <stdio.h>
@@ -127,8 +128,8 @@ namespace ccgui
 					uiscreen::resolved_texture rt;
 					if (uiscreen::resolve_texture(rinfo->screen, bmp->texture, &rt, 0, 0, 1, 1))
 					{
-						rinfo->backend->tex_rect(rt.texture, layout->x0, layout->y0, layout->x1, layout->y1,
-						                         rt.u0, rt.v0, rt.u1, rt.v1, 0xffffffff);
+						kosmos::render::tex_rect(rt.texture, layout->x0, layout->y0, layout->x1, layout->y1,
+										 rt.u0, rt.v0, rt.u1, rt.v1, 0xffffffff);
 					}
 				}
 				break;

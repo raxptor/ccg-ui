@@ -4,17 +4,19 @@
 
 	CCGUI_PATH = path.getdirectory(_SCRIPT)
 
-	CCGUI_LIB_INCLUDES = { CCGUI_PATH .. "/src/", CCGUI_PATH .. "/_gen" }
-	CCGUI_RT_INCLUDES = { CCGUI_PATH .. "/src/cpp-runtime", CCGUI_PATH .. "/_gen" }
+	CCGUI_LIB_INCLUDES = { CCGUI_PATH .. "/src/" }
+	CCGUI_RT_INCLUDES = { CCGUI_PATH .. "/src/cpp-runtime" }
 	CCGUI_LIB_LINKS = { "ccg-ui-databuilder", "ccg-ui-putki-lib", "freetype2", "libccgpng" }
 	
 	function ccgui_use_builder_lib()
+		putki_typedefs_runtime("src/types", false, CCGUI_PATH)
 		includedirs ( CCGUI_LIB_INCLUDES )
 		links { CCGUI_LIB_LINKS }
 	end
 	
 	function ccgui_use_runtime_lib()
-		includedirs ( PUTKI_RT_INCLUDES )
+		putki_typedefs_runtime("src/types", false, CCGUI_PATH)
+		includedirs ( CCGUI_RT_INCLUDES )
                 links {"ccg-runtime"}
 	end
 
@@ -62,6 +64,7 @@
 		files { "src/cpp-runtime/**.h" }
 		
 		putki_use_runtime_lib()
+		ccgui_use_runtime_lib()
 		putki_typedefs_runtime("src/types", true)
 
   

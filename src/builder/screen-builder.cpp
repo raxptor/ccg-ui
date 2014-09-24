@@ -7,7 +7,7 @@
 
 #include <inki/types/ccg-ui/Screen.h>
 
-#include "textureconfig.h"
+#include <kosmos-builder-utils/textureconfig.h>
 
 struct screenbuilder : putki::builder::handler_i
 {

@@ -1,23 +1,20 @@
 #include <putki/builder/build.h>
 #include <putki/builder/builder.h>
-#include <putki/builder/package.h>
 #include <putki/builder/resource.h>
 #include <putki/builder/build-db.h>
 #include <putki/builder/log.h>
 #include <putki/builder/db.h>
 
-#include <iostream>
-#include <sstream>
-
-#include <builder/pngutil.h>
-
 #include <inki/types/ccg-ui/Font.h>
-#include <inki/types/ccg-ui/Texture.h>
+#include <inki/types/kosmos/Texture.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#include <binpacker/maxrects_binpack.h> // NOTE: Claw include.
+#include <sstream>
+
+#include <kosmos-builder-utils/binpacker/maxrects_binpack.h>
+#include <kosmos-builder-utils/pngutil.h>
 
 struct TmpGlyphInfo
 {

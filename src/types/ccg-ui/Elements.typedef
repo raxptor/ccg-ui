@@ -1,4 +1,4 @@
-#include Texture.typedef
+%include types/kosmos/Texture.typedef
 #include Font.typedef
 
 enum UIVerticalAlignment

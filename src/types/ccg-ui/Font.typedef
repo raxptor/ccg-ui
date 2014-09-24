@@ -1,4 +1,4 @@
-#include Texture.typedef
+%include types/kosmos/Texture.typedef
 
 FontGlyph [in, out] non-instantiable
 {

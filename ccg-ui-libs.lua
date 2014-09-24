@@ -7,23 +7,27 @@
 	CCGUI_LIB_INCLUDES = { CCGUI_PATH .. "/src/", CCGUI_PATH .. "/_gen" }
 	CCGUI_RT_INCLUDES = { CCGUI_PATH .. "/src/cpp-runtime", CCGUI_PATH .. "/_gen" }
 	CCGUI_LIB_LINKS = { "ccg-ui-databuilder", "ccg-ui-putki-lib", "freetype2", "libccgpng" }
+	
+	function ccgui_use_builder_lib()
+		includedirs ( CCGUI_LIB_INCLUDES )
+		links { CCGUI_LIB_LINKS }
+	end
+	
+	function ccgui_use_runtime_lib()
+		includedirs ( PUTKI_RT_INCLUDES )
+                links {"ccg-runtime"}
+	end
 
 	project "ccg-ui-putki-lib"
-
 		kind "StaticLib"
-
 		language "C++"
 		targetname "ccg-ui-putki-lib"
 		
-		files { "src/types/**.typedef" }
-		files { "_gen/*putki-master.cpp", "_gen/inki/**.h", "_gen/data-dll/**.h" }
-
-		includedirs (PUTKI_LIB_INCLUDES)
+		putki_use_builder_lib()
+		putki_typedefs_builder("src/types", true)
+		
 		includedirs { "src" }
-		includedirs { "_gen" }
 		includedirs { "external/libpng" }
-
-		links (PUTKI_LIB_LINKS)
 
 	project "ccg-ui-databuilder"
 
@@ -32,9 +36,10 @@
 		language "C++"
 		targetname "ccg-ui-databuilder"
 
-		includedirs { "_gen" }
+		putki_typedefs_builder("src/types", false)
+		putki_use_builder_lib()
+		
 		includedirs { "src" }
-		includedirs ( PUTKI_LIB_INCLUDES )
 		includedirs { "external/libpng"}
 		includedirs { "external/freetype-2.5.3/include"}
 
@@ -44,26 +49,20 @@
 
 		links { "ccg-ui-putki-lib"}
 		links { "freetype2" }
-
 		links { "libccgpng" }
-		links (PUTKI_LIB_LINKS)		
 
 	project "ccg-runtime"
 
 		language "C++"
 		targetname "ccg-runtime"
 		kind "StaticLib"
-
-		includedirs (PUTKI_RT_INCLUDES)
+		
 		includedirs { "src/cpp-runtime" }
-		includedirs { "_gen" }
-
                 files { "src/cpp-runtime/**.cpp" }
 		files { "src/cpp-runtime/**.h" }
-		files { "_gen/outki/**.cpp" }
-		files { "_gen/outki/**.h" }
-
-		links {"putki-runtime-lib"}
+		
+		putki_use_runtime_lib()
+		putki_typedefs_runtime("src/types", true)
 
   
 if os.get() == "windows" then

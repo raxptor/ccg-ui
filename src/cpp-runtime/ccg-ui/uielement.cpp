@@ -6,6 +6,7 @@
 #include <putki/liveupdate/liveupdate.h>
 
 #include <stdio.h>
+#include <iostream>
 
 namespace ccgui
 {
@@ -14,6 +15,7 @@ namespace ccgui
 		void draw_fill(uiscreen::renderinfo *rinfo, float x0, float y0, float x1, float y1, outki::UIFill *fill)
 		{
 			LIVE_UPDATE(&fill);
+
 			if (outki::UIGradientFill *g = fill->exact_cast<outki::UIGradientFill>())
 			{
 				rinfo->backend->gradient_rect(x0, y0, x1, y1, ccgui::col2int(&g->topleft),

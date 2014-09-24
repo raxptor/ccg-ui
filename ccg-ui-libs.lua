@@ -64,7 +64,6 @@
 		files { "src/cpp-runtime/**.h" }
 		
 		putki_use_runtime_lib()
-		ccgui_use_runtime_lib()
 		putki_typedefs_runtime("src/types", true)
 
   

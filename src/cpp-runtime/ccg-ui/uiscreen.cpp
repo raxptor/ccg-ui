@@ -73,6 +73,9 @@ namespace ccgui
 
 		bool resolve_texture(instance *d, outki::Texture *texture, resolved_texture * out_resolved, float u0, float v0, float u1, float v1)
 		{
+			if (!texture)
+				return false;
+			
 			for (unsigned int i=0;i<d->data->Atlases_size;i++)
 			{
 				outki::Atlas *atlas = d->data->Atlases[i];

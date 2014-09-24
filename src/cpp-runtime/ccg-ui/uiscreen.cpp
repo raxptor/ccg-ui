@@ -38,6 +38,7 @@ namespace ccgui
 		void draw(instance *d, uicontext *context, float x0, float y0, float x1, float y1)
 		{
 			LIVE_UPDATE(&d->data);
+			LIVE_UPDATE(&d->data->Config);
 			LIVE_UPDATE(&d->data->Root);
 
 			float _x0 = x0;

@@ -1,16 +1,49 @@
 #include <outki/types/ccg-ui/Elements.h>
-#include <ccg-ui/ccg-renderer.h>
+#include <putki/liveupdate/liveupdate.h>
+
+#include <kosmos/render/render.h>
+
 #include <ccg-ui/uielement.h>
 #include <ccg-ui/uiscreen.h>
 #include <ccg-ui/uicontext.h>
-#include <putki/liveupdate/liveupdate.h>
-#include <kosmos/render/render.h>
+#include <ccg-ui/elements/builtins.h>
 
 #include <stdio.h>
 #include <iostream>
+#include <map>
 
 namespace ccgui
 {
+	typedef std::map<int, element_handler_def> HandlersMap;
+	
+	struct element_handler_set
+	{
+		HandlersMap h;
+	};
+	
+	element_handler_def *get_element_handler(element_handler_set *set, int type)
+	{
+		HandlersMap::iterator i = set->h.find(type);
+		if (i != set->h.end())
+			return &i->second;
+		return 0;
+	}
+	
+	void set_element_handler(element_handler_set *set, int type, element_handler_def const & def)
+	{
+		set->h[type] = def;
+	}
+	
+	element_handler_set *create_element_handler_set()
+	{
+		return new element_handler_set;
+	}
+	
+	void free_element_handler_set(element_handler_set *set)
+	{
+		delete set;
+	}
+
 	namespace uielement
 	{
 		void draw_fill(uiscreen::renderinfo *rinfo, float x0, float y0, float x1, float y1, outki::UIFill *fill)
@@ -19,8 +52,10 @@ namespace ccgui
 
 			if (outki::UIGradientFill *g = fill->exact_cast<outki::UIGradientFill>())
 			{
+			/*
 				kosmos::render::gradient_rect(x0, y0, x1, y1, ccgui::col2int(&g->topleft),
 				                              ccgui::col2int(&g->topright), ccgui::col2int(&g->bottomleft), ccgui::col2int(&g->bottomright));
+			*/
 			}
 			else if (outki::UISlice9Fill *g = fill->exact_cast<outki::UISlice9Fill>())
 			{

@@ -5,6 +5,7 @@
 #include <kosmos/render/render.h>
 #include <ccg-ui/uielement.h>
 #include <ccg-ui/uiwidget.h>
+#include <ccg-ui/elements/builtins.h>
 
 #include <vector>
 #include <math.h>
@@ -18,19 +19,37 @@ namespace ccgui
 		{
 			outki::UIScreen *data;
 			uiwidget::instance *root;
+			element_handler_set *handlers;
+			bool owns_handlers;
 		};
 
-		instance * create(outki::UIScreen *screen, uiwidget::widget_handler *optional_handler)
+		instance * create(outki::UIScreen *screen, element_handler_set *handlers)
 		{
 			instance *inst = new instance();
+			inst->handlers = handlers;
+			inst->owns_handlers = true;
 			inst->data = screen;
-			inst->root = uiwidget::create(screen->Root, optional_handler);
+			
+			if (!inst->handlers)
+			{
+				inst->handlers = create_element_handler_set();
+				inst->owns_handlers = true;
+				add_builtin_element_handlers(inst->handlers);
+			}
+			
+			renderinfo ri;
+			ri.screen = inst;
+			ri.context = 0;
+			ri.handlers = inst->handlers;
+			inst->root = uiwidget::create(screen->Root, &ri);
 			return inst;
 		}
 
 		void free(instance *r)
 		{
 			uiwidget::free(r->root);
+			if (r->owns_handlers)
+				free_element_handler_set(r->handlers);
 			delete r;
 		}
 
@@ -59,20 +78,23 @@ namespace ccgui
 				_y1 = _y0 + h;
 			}
 
-			uiwidget::layout(d->root, _x0, _y0, _x1, _y1);
-
 			renderinfo ri;
 			ri.screen = d;
 			ri.context = context;
-
+			ri.handlers = d->handlers;
+			
+			uiwidget::layout(d->root, &ri, _x0, _y0, _x1, _y1);
 			uiwidget::update(d->root, &ri);
 			uiwidget::draw(d->root, &ri);
 		}
 
 		bool resolve_texture(instance *d, outki::Texture *texture, resolved_texture * out_resolved, float u0, float v0, float u1, float v1)
 		{
-			if (!texture)
+			if (!texture || !texture->Output)
+			{
+				out_resolved->texture = 0;
 				return false;
+			}
 			
 			for (unsigned int i=0;i<d->data->Atlases_size;i++)
 			{
@@ -104,17 +126,12 @@ namespace ccgui
 				}
 			}
 
-			if (texture->Output)
-			{
-				out_resolved->u0 = u0;
-				out_resolved->v0 = v0;
-				out_resolved->u1 = u1;
-				out_resolved->v1 = v1;
-				out_resolved->texture = kosmos::render::load_texture(texture);
-				return true;
-			}
-
-			return false;
+			out_resolved->u0 = u0;
+			out_resolved->v0 = v0;
+			out_resolved->u1 = u1;
+			out_resolved->v1 = v1;
+			out_resolved->texture = kosmos::render::load_texture(texture);
+			return true;
 		}
 
 	}

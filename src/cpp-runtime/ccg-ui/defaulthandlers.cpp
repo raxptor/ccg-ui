@@ -7,6 +7,7 @@
 
 namespace ccgui
 {
+/*
 	struct button_handler : uiwidget::element_handler
 	{
 		button_handler() : m_fill(0)
@@ -198,4 +199,5 @@ namespace ccgui
 		static default_widget_handler s;
 		return &s;
 	}
+	*/
 }

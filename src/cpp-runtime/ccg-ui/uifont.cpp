@@ -1,6 +1,5 @@
 #include "uifont.h"
 
-#include <ccg-ui/ccg-renderer.h>
 #include <ccg-ui/util/utf8.h>
 #include <putki/log/log.h>
 #include <putki/assert/assert.h>

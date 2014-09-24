@@ -7,10 +7,7 @@
 
 namespace ccgui
 {
-	namespace uiwidget
-	{
-		struct widget_handler;
-	};
+	struct element_handler_set;
 
 	namespace uiscreen
 	{
@@ -26,9 +23,10 @@ namespace ccgui
 		{
 			ccgui::uiscreen::instance *screen;
 			ccgui::uicontext *context;
+			element_handler_set *handlers;
 		};
 
-		instance * create(outki::UIScreen *screen, uiwidget::widget_handler *optional_handler);
+		instance * create(outki::UIScreen *screen, element_handler_set *handlers);
 		void draw(instance *d, uicontext *context, float x0, float y0, float x1, float y1);
 		void free(instance *r);
 

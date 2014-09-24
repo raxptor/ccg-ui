@@ -1,8 +1,9 @@
 #include "uiwidget.h"
 
 #include <putki/liveupdate/liveupdate.h>
+
 #include <ccg-ui/uielement.h>
-#include <ccg-ui/defaulthandlers.h>
+#include <ccg-ui/elements/builtins.h>
 
 #include <memory.h>
 #include <stdio.h>
@@ -15,8 +16,9 @@ namespace ccgui
 		{
 			// layout.
 			outki::UIElement *element;
-			element_handler *handler;
+			element_handler_def *fns;
 			element_layout layout;
+			void *data;
 		};
 
 		struct instance
@@ -26,7 +28,7 @@ namespace ccgui
 			unsigned int elements_size;
 		};
 
-		instance *create(outki::UIWidget *widget, uiwidget::widget_handler *handler)
+		instance *create(outki::UIWidget *widget, uiscreen::renderinfo *rinfo)
 		{
 			instance *d = new instance;
 			d->widget = widget;
@@ -38,17 +40,16 @@ namespace ccgui
 			d->elements_size = element_count;
 			d->elements = new element_inst[element_count];
 			memset(d->elements, 0x00, sizeof(element_inst) * element_count);
-
-			widget_handler *def_handler = get_default_widget_handler();
-			widget_handler *use_handler = handler ? handler : def_handler;
-
+			
 			element_inst *cur = d->elements;
 			for (unsigned int i=0;i<widget->layers_size;i++)
 			{
 				for (unsigned int j=0;j<widget->layers[i].elements_size;j++)
 				{
 					cur->element = widget->layers[i].elements[j];
-					cur->handler = use_handler->get_element_handler(d, 0, cur->element);
+					cur->fns = ccgui::get_element_handler(rinfo->handlers, cur->element->rtti_type_ref());
+					if (cur->fns)
+						cur->data = cur->fns->init(rinfo, cur->element);
 					++cur;
 				}
 			}
@@ -59,17 +60,15 @@ namespace ccgui
 		{
 			for (unsigned int i=0;i<r->elements_size;i++)
 			{
-				if (r->elements[i].handler)
-				{
-					r->elements[i].handler->destroy();
-				}
+				if (r->elements[i].fns)
+					r->elements[i].fns->done(r->elements[i].data);
 			}
 
 			delete [] r->elements;
 			delete r;
 		}
 
-		void layout(instance *d, float x0, float y0, float x1, float y1)
+		void layout(instance *d, uiscreen::renderinfo *rinfo, float x0, float y0, float x1, float y1)
 		{
 			float expx = (x1 - x0) - d->widget->width;
 			float expy = (y1 - y0) - d->widget->height;
@@ -98,13 +97,11 @@ namespace ccgui
 				li.x1 = li.x0 + element->layout.width  + expx * element->expansion.width;
 				li.y1 = li.y0 + element->layout.height + expy * element->expansion.height;
 			}
-
+			
 			for (unsigned int i=0;i<d->elements_size;i++)
 			{
-				if (d->elements[i].handler)
-				{
-					d->elements[i].handler->on_layout(d->elements[i].element, &d->elements[i].layout);
-				}
+				if (d->elements[i].fns && d->elements[i].fns->layout)
+					d->elements[i].fns->layout(rinfo, d->elements[i].element, &d->elements[i].layout, d->elements[i].data);
 			}
 		}
 
@@ -112,9 +109,10 @@ namespace ccgui
 		{
 			for (unsigned int i=0;i<d->elements_size;i++)
 			{
-				if (d->elements[i].handler)
+				element_handler_def *def = d->elements[i].fns;
+				if (def && def->update)
 				{
-					d->elements[i].handler->update(d->elements[i].element, rinfo, &d->elements[i].layout);
+					def->update(rinfo, d->elements[i].element, &d->elements[i].layout, d->elements[i].data);
 				}
 			}
 		}
@@ -123,9 +121,9 @@ namespace ccgui
 		{
 			for (unsigned int i=0;i<d->elements_size;i++)
 			{
-				if (d->elements[i].handler)
+				if (d->elements[i].fns)
 				{
-					d->elements[i].handler->draw(d->elements[i].element, rinfo, &d->elements[i].layout);
+					d->elements[i].fns->draw(rinfo, d->elements[i].element, &d->elements[i].layout, d->elements[i].data);
 				}
 			}
 		}

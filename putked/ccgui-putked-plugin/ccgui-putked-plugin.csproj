@@ -88,13 +88,17 @@
     <Folder Include="ccg-gen\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\putki\putked\putki-lib\putki-lib.csproj">
+      <Project>{72E9BCF0-B1DA-4789-A676-C2ABAB38FCDD}</Project>
+      <Name>putki-lib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\putki\putked\putked\putked.csproj">
       <Project>{168A9417-EB78-4C88-B52F-A5BC0D5C0D61}</Project>
       <Name>putked</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\putki\putked\putki-lib\putki-lib.csproj">
-      <Project>{72E9BCF0-B1DA-4789-A676-C2ABAB38FCDD}</Project>
-      <Name>putki-lib</Name>
+    <ProjectReference Include="..\..\..\kosmos\putked\kosmos-putked-plugin\kosmos-putked-plugin.csproj">
+      <Project>{590335F1-7BF2-48AC-B9F9-A1FE613D982F}</Project>
+      <Name>kosmos-putked-plugin</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

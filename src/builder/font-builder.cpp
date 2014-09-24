@@ -250,7 +250,6 @@ struct fontbuilder : putki::builder::handler_i
 						pd.advance = g.advance;
 						for (int l=0;l<g.w*g.h;l++)
 							pd.pixelData.push_back(g.data[l]);
-//							pd.pixelData.push_back(255* (((l%g.w)%2)^((l/g.w)%2))); // g.data[l]);
 						up.PixGlyphs.push_back(pd);
 					}
 				}

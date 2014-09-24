@@ -1,9 +1,9 @@
-StreamingPackage [in, out]
+StreamingPackage
 {
 	string PackagePath
 }
 
-DataFileBase [in, out]
+DataFileBase no-out
 {
 	string PathPrefix
 }
@@ -21,7 +21,7 @@ enum DataContainerOutputMode
 	DCOUT_FILE
 }
 
-DataContainerConfiguration [in, out] rtti
+DataContainerConfiguration no-out rtti
 {
 	enum DataContainerOutputMode Mode
 	ptr StreamingPackage Streaming

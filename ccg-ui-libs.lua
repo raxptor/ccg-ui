@@ -6,7 +6,7 @@
 
 	CCGUI_LIB_INCLUDES = { CCGUI_PATH .. "/src/" }
 	CCGUI_RT_INCLUDES = { CCGUI_PATH .. "/src/cpp-runtime" }
-	CCGUI_LIB_LINKS = { "ccg-ui-databuilder", "ccg-ui-putki-lib", "freetype2", "libccgpng" }
+	CCGUI_LIB_LINKS = { "ccg-ui-databuilder", "freetype2", "libccgpng" }
 	
 	function ccgui_use_builder_lib()
 		putki_typedefs_runtime("src/types", false, CCGUI_PATH)
@@ -20,17 +20,6 @@
                 links {"ccg-runtime"}
 	end
 
-	project "ccg-ui-putki-lib"
-		kind "StaticLib"
-		language "C++"
-		targetname "ccg-ui-putki-lib"
-		
-		putki_use_builder_lib()
-		putki_typedefs_builder("src/types", true)
-		
-		includedirs { "src" }
-		includedirs { "external/libpng" }
-
 	project "ccg-ui-databuilder"
 
 		kind "StaticLib"
@@ -38,7 +27,7 @@
 		language "C++"
 		targetname "ccg-ui-databuilder"
 
-		putki_typedefs_builder("src/types", false)
+		putki_typedefs_builder("src/types", true)
 		putki_use_builder_lib()
 		
 		includedirs { "src" }

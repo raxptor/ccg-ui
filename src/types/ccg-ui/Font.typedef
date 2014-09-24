@@ -46,6 +46,6 @@ Font [in, out]
 	[no-out] bool OutputPixelData = false
 	[no-out] int[] Characters
 	[no-out] int[] PixelSizes
-	ptr TextureConfiguration TextureConfiguration
+	[no-out] ptr TextureConfiguration TextureConfiguration
 	[hidden] FontOutput[] Outputs
 }

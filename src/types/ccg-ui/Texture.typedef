@@ -30,30 +30,30 @@ enum TextureResizeMode
 	RESIZE_UNCROP_POW2SQUARE
 }
 
-TextureOutputFormat rtti non-instantiable
+TextureOutputFormat rtti non-instantiable no-out
 {
 	[no-out] ptr DataContainerConfiguration StorageConfiguration
 	enum TextureResizeMode ResizeMode = RESIZE_NONE
 	bool PremultiplyAlpha = true
 }
 
-TextureOutputFormatPng : TextureOutputFormat
+TextureOutputFormatPng : TextureOutputFormat no-out
 {
 
 }
 
-TextureOutputFormatJpeg : TextureOutputFormat
+TextureOutputFormatJpeg : TextureOutputFormat no-out
 {
 	int Quality = 85
 	bool Twopass = false
 }
 
-TextureOutputFormatRaw : TextureOutputFormat
+TextureOutputFormatRaw : TextureOutputFormat no-out
 {
 
 }
 
-TextureConfiguration [in, out] rtti
+TextureConfiguration [in, out] rtti no-out
 {
 	[build-config] auxptr TextureOutputFormat OutputFormat
 }

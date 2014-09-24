@@ -1,15 +1,17 @@
 #include "uifont.h"
 
 #include <ccg-ui/util/utf8.h>
-#include <putki/log/log.h>
 #include <putki/assert/assert.h>
+
+#include <kosmos/log/log.h>
+#include <kosmos/render/render.h>
 
 #include <vector>
 
 
 namespace ccgui
 {
-	namespace font
+	namespace uifont
 	{
 		struct data
 		{
@@ -19,14 +21,14 @@ namespace ccgui
 		struct layout_glyph
 		{
 			float x0, y0, x1, y1;
-			unsigned int font_glyph_idx;
+			outki::FontGlyph *glyph;
 		};
 
 		struct layout_data
 		{
-			data *font;
 			unsigned int glyphs_size;
 			layout_glyph *glyphs;
+			outki::FontOutput *fontdata;
 		};
 
 		data* create(outki::Font *font)
@@ -86,7 +88,7 @@ namespace ccgui
 				layout_data *layout = new layout_data();
 				layout->glyphs_size = 0;
 				layout->glyphs = 0;
-				layout->font = font;
+				layout->fontdata = 0;
 				return layout;
 			}
 
@@ -103,7 +105,7 @@ namespace ccgui
 				{
 					if (glyphs == MAX_GLYPHS)
 					{
-						PTK_WARNING("String contains more than max number of glyphs " << MAX_GLYPHS)
+						KOSMOS_WARNING("String contains more than max number of glyphs " << MAX_GLYPHS)
 						break;
 					}
 					glyph_id[glyphs++] = (int) codepoint;
@@ -111,14 +113,71 @@ namespace ccgui
 			}
 
 			if (state != UTF8_ACCEPT)
-				PTK_WARNING("String contains invalid utf8");
+				KOSMOS_WARNING("String contains invalid utf8");
+
+			outki::FontOutput *fontdata = &source_font->Outputs[best_index];
 
 			layout_data *layout = new layout_data();
-			layout->font = font;
+			layout->fontdata = fontdata;
 			layout->glyphs_size = glyphs;
 			layout->glyphs = new layout_glyph[glyphs];
+			
+			for (int i=0;i!=glyphs;i++)
+			{
+				outki::FontGlyph *gldata = 0;
+				layout_glyph *current = &layout->glyphs[i];
+				
+				for (int j=0;j!=fontdata->Glyphs_size;j++)
+				{
+					if (fontdata->Glyphs[j].glyph == glyph_id[i])
+					{
+						gldata = &fontdata->Glyphs[j];
+						break;
+					}
+				}
+				
+				current->glyph = gldata;
+				
+				if (!gldata)
+					continue;
 
+				current->x0 = i * 20;
+				current->y0 = 0;
+				current->x1 = i * 20 + gldata->pixelWidth;
+				current->y1 = gldata->pixelHeight;
+			}
+			
 			return layout;
+		}
+
+		void layout_draw(layout_data *layout, float x, float y)
+		{
+			kosmos::render::loaded_texture *tex = kosmos::render::load_texture(layout->fontdata->OutputTexture);
+			for (int i=0;i<layout->glyphs_size;i++)
+			{
+				layout_glyph *cur = &layout->glyphs[i];
+				if (!cur->glyph)
+					continue;
+					
+				outki::FontGlyph *glyph = cur->glyph;
+		
+				kosmos::render::tex_rect(tex,
+					x + cur->x0,
+					y + cur->y0,
+					x + cur->x1,
+					y + cur->y1,
+					glyph->u0,
+					glyph->v0,
+					glyph->u1,
+					glyph->v1,
+					0xffffffff
+				);
+			}
+		/*
+			kosmos::render::tex_rect(tex,
+					0, 0, 256, 256, 0, 0, 1, 1, 0xffffffff);
+		*/
+			kosmos::render::unload_texture(tex);
 		}
 
 		void layout_free(layout_data *layout)

@@ -5,7 +5,7 @@
 
 namespace ccgui
 {
-	namespace font
+	namespace uifont
 	{
 		struct data;
 		struct layout_data;
@@ -14,6 +14,7 @@ namespace ccgui
 		void free(data *);
 
 		layout_data *layout_make(data *font, const char *text, float pixel_size, int max_width = -1, float rendering_scale_hint=1);
+		void layout_draw(layout_data *layout, float x, float y);
 		void layout_free(layout_data *layout);
 	}
 }

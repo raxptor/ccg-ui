@@ -7,6 +7,8 @@
 #include <kosmos/render/render.h>
 #include <kosmos/log/log.h>
 
+#include "uifont.h"
+
 namespace ccgui
 {
 	struct element_handler_set;
@@ -27,7 +29,6 @@ namespace ccgui
 	{
 		KOSMOS_DEBUG("Destroying bitmap")
 	}
-
 
 	void button_draw(uiscreen::renderinfo *rinfo, outki::UIButtonElement *button, uiwidget::element_layout *layout, dummy *tag)
 	{
@@ -57,11 +58,21 @@ namespace ccgui
 		LIVE_UPDATE(&fill->fill);
 		uielement::draw_fill(rinfo, layout->x0, layout->y0, layout->x1, layout->y1, fill->fill);
 	}
+	
+	void text_draw(uiscreen::renderinfo *rinfo, outki::UITextElement *text, uiwidget::element_layout *layout, dummy *tag)
+	{
+		uifont::data *inst = uifont::create(text->font);
+		uifont::layout_data *ld = uifont::layout_make(inst, text->Text, text->pixelSize, -1, 1.0f);
+		uifont::layout_draw(ld, layout->x0, layout->y0);
+		uifont::layout_free(ld);
+		uifont::free(inst);
+	}
 
 	void add_builtin_element_handlers(element_handler_set *target)
 	{
 		set_element_handler<outki::UIBitmapElement, dummy>(target, 0, 0, 0, bitmap_draw, 0);
 		set_element_handler<outki::UIButtonElement, dummy>(target, 0, 0, 0, button_draw, 0);
 		set_element_handler<outki::UIFillElement, dummy>(target, 0, 0, 0, fill_draw, 0);
+		set_element_handler<outki::UITextElement, dummy>(target, 0, 0, 0, text_draw, 0);
 	}
 }

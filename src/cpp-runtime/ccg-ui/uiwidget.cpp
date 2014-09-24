@@ -48,8 +48,13 @@ namespace ccgui
 				{
 					cur->element = widget->layers[i].elements[j];
 					cur->fns = ccgui::get_element_handler(rinfo->handlers, cur->element->rtti_type_ref());
+					cur->data = 0;
 					if (cur->fns)
-						cur->data = cur->fns->init(rinfo, cur->element);
+					{
+						if (!(cur->data = cur->fns->init(rinfo, cur->element)))
+							cur->data = cur;
+					}
+						
 					++cur;
 				}
 			}

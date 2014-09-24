@@ -90,7 +90,7 @@ namespace ccgui
 
 		bool resolve_texture(instance *d, outki::Texture *texture, resolved_texture * out_resolved, float u0, float v0, float u1, float v1)
 		{
-			if (!texture || !texture->Output)
+			if (!texture)
 			{
 				out_resolved->texture = 0;
 				return false;
@@ -130,8 +130,17 @@ namespace ccgui
 			out_resolved->v0 = v0;
 			out_resolved->u1 = u1;
 			out_resolved->v1 = v1;
-			out_resolved->texture = kosmos::render::load_texture(texture);
-			return true;
+			
+			if (texture->Output)
+			{
+				out_resolved->texture = kosmos::render::load_texture(texture);
+				return true;
+			}
+			else
+			{
+				out_resolved->texture = 0;
+				return false;
+			}
 		}
 
 	}

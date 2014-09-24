@@ -2,6 +2,8 @@
 #include <ccg-ui/uiscreen.h>
 #include <ccg-ui/uiwidget.h>
 
+#include <putki/liveupdate/liveupdate.h>
+
 #include <kosmos/render/render.h>
 #include <kosmos/log/log.h>
 
@@ -25,13 +27,41 @@ namespace ccgui
 	{
 		KOSMOS_DEBUG("Destroying bitmap")
 	}
-	
-	namespace
+
+
+	void button_draw(uiscreen::renderinfo *rinfo, outki::UIButtonElement *button, uiwidget::element_layout *layout, dummy *tag)
 	{
+		uielement::button_logic(rinfo, tag, layout->x0, layout->y0, layout->x1, layout->y1);
+		
+		if (button->Style)
+		{
+			LIVE_UPDATE(&button->Style);
+		
+			outki::UIFill *fill = button->Style->Normal;
+
+			if (uielement::is_mousepressed(rinfo->context, tag))
+			{
+				fill = button->Style->Pressed;
+			}
+			else if (uielement::is_mouseover(rinfo->context, tag))
+			{
+				fill = button->Style->Highlight;
+			}
+			
+			uielement::draw_fill(rinfo, layout->x0, layout->y0, layout->x1, layout->y1, fill);
+		}
+	}
+	
+	void fill_draw(uiscreen::renderinfo *rinfo, outki::UIFillElement *fill, uiwidget::element_layout *layout, dummy *tag)
+	{
+		LIVE_UPDATE(&fill->fill);
+		uielement::draw_fill(rinfo, layout->x0, layout->y0, layout->x1, layout->y1, fill->fill);
 	}
 
 	void add_builtin_element_handlers(element_handler_set *target)
 	{
 		set_element_handler<outki::UIBitmapElement, dummy>(target, 0, 0, 0, bitmap_draw, 0);
+		set_element_handler<outki::UIButtonElement, dummy>(target, 0, 0, 0, button_draw, 0);
+		set_element_handler<outki::UIFillElement, dummy>(target, 0, 0, 0, fill_draw, 0);
 	}
 }

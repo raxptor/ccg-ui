@@ -52,10 +52,8 @@ namespace ccgui
 
 			if (outki::UIGradientFill *g = fill->exact_cast<outki::UIGradientFill>())
 			{
-			/*
-				kosmos::render::gradient_rect(x0, y0, x1, y1, ccgui::col2int(&g->topleft),
-				                              ccgui::col2int(&g->topright), ccgui::col2int(&g->bottomleft), ccgui::col2int(&g->bottomright));
-			*/
+				kosmos::render::gradient_rect(x0, y0, x1, y1, col2int(g->topleft),
+				                              col2int(g->topright), col2int(g->bottomleft), col2int(g->bottomright));
 			}
 			else if (outki::UISlice9Fill *g = fill->exact_cast<outki::UISlice9Fill>())
 			{
@@ -158,7 +156,6 @@ namespace ccgui
 					rinfo->context->mouseover = 0;
 				}
 			}
-
 
 
 			if (clicked)

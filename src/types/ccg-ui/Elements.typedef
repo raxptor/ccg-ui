@@ -142,7 +142,7 @@ UITextElement : UIElement [in, out]
 	enum UIHorizontalAlignment HorizontalAlignment = UIHorizontalAlignment_Center
 	enum UIVerticalAlignment VerticalAlignment = UIVerticalAlignment_Center
 
-	UIFill BackgroundFill
+	ptr UIFill BackgroundFill
 }
 
 UIButtonElement : UIElement [in, out]

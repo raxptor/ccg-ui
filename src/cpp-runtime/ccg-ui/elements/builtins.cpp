@@ -30,29 +30,46 @@ namespace ccgui
 		KOSMOS_DEBUG("Destroying bitmap")
 	}
 
-	void button_draw(uiscreen::renderinfo *rinfo, outki::UIButtonElement *button, uiwidget::element_layout *layout, dummy *tag)
+	struct button_data
 	{
-		uielement::button_logic(rinfo, tag, layout->x0, layout->y0, layout->x1, layout->y1);
-		
+		outki::UIFill *fill;
+	};
+
+	void button_update(uiscreen::renderinfo *rinfo, outki::UIButtonElement *button, uiwidget::element_layout *layout, button_data *data)
+	{
+		uielement::button_logic(rinfo, data, layout->x0, layout->y0, layout->x1, layout->y1);
+
 		if (button->Style)
 		{
 			LIVE_UPDATE(&button->Style);
 		
 			outki::UIFill *fill = button->Style->Normal;
 
-			if (uielement::is_mousepressed(rinfo->context, tag))
+			if (uielement::is_mousepressed(rinfo->context, data))
 			{
 				fill = button->Style->Pressed;
 			}
-			else if (uielement::is_mouseover(rinfo->context, tag))
+			else if (uielement::is_mouseover(rinfo->context, data))
 			{
 				fill = button->Style->Highlight;
 			}
-			
-			uielement::draw_fill(rinfo, layout->x0, layout->y0, layout->x1, layout->y1, fill);
+
+			data->fill = fill;
+		}
+		else
+		{
+			data->fill = 0;
 		}
 	}
-	
+
+	void button_draw(uiscreen::renderinfo *rinfo, outki::UIButtonElement *button, uiwidget::element_layout *layout, button_data *data)
+	{
+		if (data->fill)
+		{
+			uielement::draw_fill(rinfo, layout->x0, layout->y0, layout->x1, layout->y1, data->fill);
+		}
+	}
+
 	void fill_draw(uiscreen::renderinfo *rinfo, outki::UIFillElement *fill, uiwidget::element_layout *layout, dummy *tag)
 	{
 		LIVE_UPDATE(&fill->fill);
@@ -75,7 +92,7 @@ namespace ccgui
 	void add_builtin_element_handlers(element_handler_set *target)
 	{
 		set_element_handler<outki::UIBitmapElement, dummy>(target, 0, 0, 0, bitmap_draw, 0);
-		set_element_handler<outki::UIButtonElement, dummy>(target, 0, 0, 0, button_draw, 0);
+		set_element_handler<outki::UIButtonElement, button_data>(target, 0, 0, button_update, button_draw, 0);
 		set_element_handler<outki::UIFillElement, dummy>(target, 0, 0, 0, fill_draw, 0);
 		set_element_handler<outki::UITextElement, dummy>(target, 0, 0, 0, text_draw, 0);
 	}

@@ -8,7 +8,7 @@ namespace ccgui
 	namespace uiscreen { struct instance; struct renderinfo; }
 	namespace uiwidget { struct element_layout; }
 
-	typedef void* (*element_init_fn)(uiscreen::renderinfo *rinfo, outki::UIElement *element);
+	typedef void* (*element_init_fn)(uiscreen::renderinfo *rinfo, outki::UIElement *element, void *instance_data_inplace);
 	typedef void  (*element_layout_fn)(uiscreen::renderinfo *rinfo, outki::UIElement *element, uiwidget::element_layout *layout, void *instance_data);
 	typedef void  (*element_update_draw_fn)(uiscreen::renderinfo *rinfo, outki::UIElement *element, uiwidget::element_layout *layout, void *instance_data);
 	typedef void  (*element_done_fn)(void *instance_data);
@@ -29,13 +29,15 @@ namespace ccgui
 	template<typename element_type, typename instance_type=element_no_instance>
 	struct wrap_it
 	{
-		typedef instance_type* (*init_fn)(uiscreen::renderinfo *rinfo, element_type *element);
+		typedef instance_type* (*init_fn)(uiscreen::renderinfo *rinfo, element_type *element, instance_type *inplace);
 		typedef void (*layout_fn)(uiscreen::renderinfo *rinfo, element_type *element, uiwidget::element_layout *layout, instance_type *instance_data);
 		typedef void (*update_draw_fn)(uiscreen::renderinfo *rinfo, element_type *element, uiwidget::element_layout *layout, instance_type *instance_data);
 		typedef void (*done_fn)(instance_type *t);
 		
-		static void* def_init(uiscreen::renderinfo *rinfo, outki::UIElement *element)
+		static void* def_init(uiscreen::renderinfo *rinfo, outki::UIElement *element, void *inplace)
 		{
+			if (inplace)
+				return 0;
 			if (!sizeof(instance_type))
 				return 0;
 			else

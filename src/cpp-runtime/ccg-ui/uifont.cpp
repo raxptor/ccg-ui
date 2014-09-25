@@ -1,6 +1,8 @@
 #include "uifont.h"
 
 #include <ccg-ui/util/utf8.h>
+#include <outki/types/ccg-ui/Font.h>
+
 #include <putki/assert/assert.h>
 
 #include <kosmos/log/log.h>
@@ -16,20 +18,6 @@ namespace ccgui
 		struct data
 		{
 			const outki::Font *font_data;
-		};
-
-		struct layout_glyph
-		{
-			float x0, y0, x1, y1;
-			const outki::FontGlyph *glyph;
-		};
-
-		struct layout_data
-		{
-			unsigned int glyphs_size;
-			layout_glyph *glyphs;
-			unsigned int lines;
-			const outki::FontOutput *fontdata;
 		};
 
 		data* create(outki::Font *font)
@@ -148,8 +136,14 @@ namespace ccgui
 				}
 			}
 
-			int bounds_x0, bounds_y0;
-			int bounds_x1, bounds_y1;
+			if (!layout->glyphs_size)
+			{
+				delete layout;
+				return 0;
+			}
+
+			layout->face_y0 = - scaling * fontdata->BBoxMaxY / 64.0f;
+			layout->face_y1 = - scaling * fontdata->BBoxMinY / 64.0f;
 
 			float pen_break = max_width * fontdata->BBoxMaxY / 64.0f;
 			int y_ofs = 0;
@@ -193,6 +187,11 @@ namespace ccgui
 				current->y0 = ((int)(current->y0 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
 				current->x1 = ((int)(current->x1 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
 				current->y1 = ((int)(current->y1 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
+
+				if (!i || current->x1 > layout->maxx) layout->maxx = current->x1;
+				if (!i || current->y1 > layout->maxy) layout->maxy = current->y1;
+				if (!i || current->x0 < layout->miny) layout->minx = current->x0;
+				if (!i || current->x0 < layout->maxy) layout->minx = current->x0;
 
 				pen += glyph->advance;
 

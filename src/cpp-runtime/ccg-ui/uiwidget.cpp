@@ -51,7 +51,7 @@ namespace ccgui
 					cur->data = 0;
 					if (cur->fns)
 					{
-						if (!(cur->data = cur->fns->init(rinfo, cur->element)))
+						if (!(cur->data = cur->fns->init(rinfo, cur->element, 0)))
 							cur->data = cur;
 					}
 						

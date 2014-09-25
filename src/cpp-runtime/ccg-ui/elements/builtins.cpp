@@ -69,7 +69,7 @@ namespace ccgui
 				fnt = button->Style->FontStyle->Font;
 				if (!data->label_layout)
 				{
-					data->label_layout = uifont::layout_make(fnt, "Baberiba", rinfo->layout_scale * button->Style->FontStyle->PixelSize, -1, rinfo->render_scaling_hint);
+					data->label_layout = uifont::layout_make(fnt, button->Text, rinfo->layout_scale * button->Style->FontStyle->PixelSize, -1, rinfo->render_scaling_hint);
 				}
 			}
 

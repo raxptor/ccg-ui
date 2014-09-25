@@ -1,7 +1,9 @@
 #include "uifont.h"
 
 #include <ccg-ui/util/utf8.h>
+
 #include <outki/types/ccg-ui/Font.h>
+#include <outki/types/ccg-ui/Elements.h>
 
 #include <putki/assert/assert.h>
 
@@ -15,37 +17,14 @@ namespace ccgui
 {
 	namespace uifont
 	{
-		struct data
-		{
-			const outki::Font *font_data;
-		};
-
-		data* create(outki::Font *font)
-		{
-			PTK_FATAL_ASSERT(font)
-
-			data *d = new data();
-			d->font_data = font;
-			return d;
-		}
-
-		void free(data *d)
-		{
-			delete d;
-		}
-
-		layout_data *layout_make(data *font, const char *text, float pixel_size, int max_width, float rendering_scale_hint)
+		layout_data *layout_make(outki::Font *font, const char *text, float pixel_size, int max_width, float rendering_scale_hint)
 		{
 			if (!text || !text[0])
 				return 0;
 
 			PTK_FATAL_ASSERT(font)
+			PTK_FATAL_ASSERT(font->Outputs_size)
 			PTK_FATAL_ASSERT(text)
-
-			const outki::Font *source_font = font->font_data;
-
-			PTK_FATAL_ASSERT(source_font)
-			PTK_ASSERT(source_font->Outputs_size)
 
 			int best_index = -1;
 			float diff = 0.0f;
@@ -55,9 +34,9 @@ namespace ccgui
 			const float actual_pixel_size = rendering_scale_hint * pixel_size;
 			float scaling = 1.0f;
 
-			for (int i=0;i!=source_font->Outputs_size;i++)
+			for (int i=0;i!=font->Outputs_size;i++)
 			{
-				const outki::FontOutput *fo = &source_font->Outputs[i];
+				const outki::FontOutput *fo = &font->Outputs[i];
 				PTK_FATAL_ASSERT(fo)
 
 				float d = actual_pixel_size - fo->PixelSize;
@@ -108,7 +87,7 @@ namespace ccgui
 			if (state != UTF8_ACCEPT)
 				KOSMOS_WARNING("String contains invalid utf8");
 
-			const outki::FontOutput *fontdata = &source_font->Outputs[best_index];
+			const outki::FontOutput *fontdata = &font->Outputs[best_index];
 
 			layout_data *layout = new layout_data();
 			layout->fontdata = fontdata;
@@ -151,7 +130,7 @@ namespace ccgui
 
 			// do actual layouting.
 			layout->lines = 0;
-			int scaling_int = (int)(64 * scaling);
+
 			for (int i=0;i!=layout->glyphs_size;i++)
 			{
 				const outki::FontGlyph *glyph = &fontdata->Glyphs[glyph_id[i]];
@@ -183,15 +162,18 @@ namespace ccgui
 				current->y1 = y + h;
 				current->glyph = glyph;
 
-				current->x0 = ((int)(current->x0 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
-				current->y0 = ((int)(current->y0 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
-				current->x1 = ((int)(current->x1 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
-				current->y1 = ((int)(current->y1 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
+				if (actual_pixel_size < 20.0f && false)
+				{
+					current->x0 = ((int)(current->x0 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
+					current->y0 = ((int)(current->y0 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
+					current->x1 = ((int)(current->x1 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
+					current->y1 = ((int)(current->y1 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
+				}
 
 				if (!i || current->x1 > layout->maxx) layout->maxx = current->x1;
 				if (!i || current->y1 > layout->maxy) layout->maxy = current->y1;
-				if (!i || current->x0 < layout->miny) layout->minx = current->x0;
-				if (!i || current->x0 < layout->maxy) layout->minx = current->x0;
+				if (!i || current->x0 < layout->minx) layout->minx = current->x0;
+				if (!i || current->y0 < layout->miny) layout->miny = current->y0;
 
 				pen += glyph->advance;
 
@@ -224,7 +206,7 @@ namespace ccgui
 			return layout;
 		}
 
-		void layout_draw(layout_data *layout, float x, float y)
+		void layout_draw(layout_data *layout, float x, float y, unsigned long color)
 		{
 			kosmos::render::loaded_texture *tex = kosmos::render::load_texture(layout->fontdata->OutputTexture);
 			for (int i=0;i<layout->glyphs_size;i++)
@@ -244,7 +226,7 @@ namespace ccgui
 					glyph->v0,
 					glyph->u1,
 					glyph->v1,
-					0xffffffff
+					color
 				);
 			}
 
@@ -252,6 +234,43 @@ namespace ccgui
 //					0, 0, 256, 256, 0, 0, 1, 1, 0xffffffff);
 
 			kosmos::render::unload_texture(tex);
+		}
+
+		void layout_draw_align(layout_data *layout, float x0, float y0, float x1, float y1, int v, int h, unsigned long color)
+		{
+			float x, y;
+
+			switch (h)
+			{
+				case outki::UIHorizontalAlignment_Center:
+					x = (x0 + x1 - (layout->maxx - layout->minx)) / 2 - layout->minx;
+					break;
+				case outki::UIHorizontalAlignment_Right:
+					x = x1 - (layout->maxx);
+					break;
+				default: // left align
+					x = x0 - layout->minx;
+					break;
+			}
+
+			switch (v)
+			{
+				case outki::UIVerticalAlignment_Top:
+					y = y0 - layout->miny;
+					break;
+				case outki::UIVerticalAlignment_Bottom:
+					y = y1 - layout->maxy;
+					break;
+				default: // center
+					{
+						float ya = (y0 + y1 - (layout->face_y1 - layout->face_y0)) / 2 - layout->face_y0;
+						float yb = (y0 + y1 - (layout->maxy - layout->miny)) / 2 - layout->miny;
+						y = (ya + yb) * 0.5f;
+						break;
+					}
+			}
+
+			return layout_draw(layout, x, y, color);
 		}
 
 		void layout_free(layout_data *layout)

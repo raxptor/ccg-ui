@@ -94,10 +94,8 @@ UIButtonStyle [in, out]
 UIElement [in, out] rtti non-instantiable
 {
 	string id
-
 	UIRect layout
 	UIRect expansion
-	UIColor color
 }
 
 UICustomElement : UIElement [in, out]
@@ -137,12 +135,15 @@ UITextElement : UIElement [in, out]
 {
 	ptr Font font
 	int pixelSize
+	UIColor color
+
 	string Text
 
 	enum UIHorizontalAlignment HorizontalAlignment = UIHorizontalAlignment_Center
 	enum UIVerticalAlignment VerticalAlignment = UIVerticalAlignment_Center
 
 	ptr UIFill BackgroundFill
+	bool AdjustFill
 }
 
 UIButtonElement : UIElement [in, out]

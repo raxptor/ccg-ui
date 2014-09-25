@@ -1,13 +1,13 @@
-#include <ccg-ui/uielement.h>
-#include <ccg-ui/uiscreen.h>
-#include <ccg-ui/uiwidget.h>
 
 #include <putki/liveupdate/liveupdate.h>
 
 #include <kosmos/render/render.h>
 #include <kosmos/log/log.h>
 
-#include "uifont.h"
+#include "ccg-ui/uielement.h"
+#include "ccg-ui/uiscreen.h"
+#include "ccg-ui/uiwidget.h"
+#include "ccg-ui/uifont.h"
 
 namespace ccgui
 {
@@ -61,10 +61,14 @@ namespace ccgui
 	
 	void text_draw(uiscreen::renderinfo *rinfo, outki::UITextElement *text, uiwidget::element_layout *layout, dummy *tag)
 	{
+		LIVE_UPDATE(&text->font);
 		uifont::data *inst = uifont::create(text->font);
-		uifont::layout_data *ld = uifont::layout_make(inst, text->Text, text->pixelSize, -1, 1.0f);
-		uifont::layout_draw(ld, layout->x0, layout->y0);
-		uifont::layout_free(ld);
+		uifont::layout_data *ld = uifont::layout_make(inst, text->Text, text->pixelSize * rinfo->layout_scale, -1, rinfo->render_scaling_hint);
+		if (ld)
+		{
+			uifont::layout_draw(ld, layout->x0, layout->y0);
+			uifont::layout_free(ld);
+		}
 		uifont::free(inst);
 	}
 

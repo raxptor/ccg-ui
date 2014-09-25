@@ -73,10 +73,11 @@ namespace ccgui
 			delete r;
 		}
 
-		void layout(instance *d, uiscreen::renderinfo *rinfo, float x0, float y0, float x1, float y1)
+		void layout(instance *d, uiscreen::renderinfo *rinfo, const element_layout *layout)
 		{
-			float expx = (x1 - x0) - d->widget->width;
-			float expy = (y1 - y0) - d->widget->height;
+			float expx = (layout->nsx1 - layout->nsx0) - d->widget->width;
+			float expy = (layout->nsy1 - layout->nsy0) - d->widget->height;
+
 			if (expx < 0)
 			{
 				expx = 0;
@@ -97,10 +98,23 @@ namespace ccgui
 				}
 
 				element_layout& li = d->elements[i].layout;
-				li.x0 = x0 + element->layout.x + expx * element->expansion.x;
-				li.y0 = y0 + element->layout.y + expy * element->expansion.y;
-				li.x1 = li.x0 + element->layout.width  + expx * element->expansion.width;
-				li.y1 = li.y0 + element->layout.height + expy * element->expansion.height;
+
+				// layout in non-scaled
+				const float x0 = layout->nsx0;
+				const float y0 = layout->nsy0;
+				const float x1 = layout->nsx1;
+				const float y1 = layout->nsy1;
+
+				li.nsx0 = x0 + element->layout.x + expx * element->expansion.x;
+				li.nsy0 = y0 + element->layout.y + expy * element->expansion.y;
+				li.nsx1 = li.nsx0 + element->layout.width  + expx * element->expansion.width;
+				li.nsy1 = li.nsy0 + element->layout.height + expy * element->expansion.height;
+
+				// scale layout
+				li.x0 = rinfo->layout_scale * li.nsx0 + rinfo->layout_offset_x;
+				li.y0 = rinfo->layout_scale * li.nsy0 + rinfo->layout_offset_y;
+				li.x1 = rinfo->layout_scale * li.nsx1 + rinfo->layout_offset_x;
+				li.y1 = rinfo->layout_scale * li.nsy1 + rinfo->layout_offset_y;
 			}
 			
 			for (unsigned int i=0;i<d->elements_size;i++)

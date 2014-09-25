@@ -25,7 +25,7 @@ struct TmpGlyphInfo
 };
 
 namespace {
-	const char *builder_version = "font-builder-1";
+	const char *builder_version = "font-builder-debug-3";
 }
 
 struct fontbuilder : putki::builder::handler_i
@@ -197,7 +197,7 @@ struct fontbuilder : putki::builder::handler_i
 					outBmp = new unsigned int[out_width * out_height];
 					for (int y=0;y<out_height;y++)
 					{
-						for (int x=0;x	<out_width;x++)
+						for (int x=0;x<out_width;x++)
 						{
 							//outBmp[y*out_width+x] = (x^y) & 1 ? 0xff101010 : 0xff808080;
 							outBmp[y*out_width+x] = 0x0;
@@ -260,6 +260,7 @@ struct fontbuilder : putki::builder::handler_i
 					std::string outpath = ss.str();
 					std::string output_atlas_path = ss.str() + ".png";
 					output_atlas_path = ccgui::pngutil::write_to_temp(builder, output_atlas_path.c_str(), outBmp, out_width, out_height);
+					putki::builder::touched_temp_resource(builder, output_atlas_path.c_str());
 
 					// create new texture.
 					inki::Texture *texture = inki::Texture::alloc();

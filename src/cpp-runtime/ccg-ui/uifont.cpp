@@ -15,20 +15,21 @@ namespace ccgui
 	{
 		struct data
 		{
-			outki::Font *font_data;
+			const outki::Font *font_data;
 		};
 
 		struct layout_glyph
 		{
 			float x0, y0, x1, y1;
-			outki::FontGlyph *glyph;
+			const outki::FontGlyph *glyph;
 		};
 
 		struct layout_data
 		{
 			unsigned int glyphs_size;
 			layout_glyph *glyphs;
-			outki::FontOutput *fontdata;
+			unsigned int lines;
+			const outki::FontOutput *fontdata;
 		};
 
 		data* create(outki::Font *font)
@@ -53,7 +54,7 @@ namespace ccgui
 			PTK_FATAL_ASSERT(font)
 			PTK_FATAL_ASSERT(text)
 
-			outki::Font *source_font = font->font_data;
+			const outki::Font *source_font = font->font_data;
 
 			PTK_FATAL_ASSERT(source_font)
 			PTK_ASSERT(source_font->Outputs_size)
@@ -64,22 +65,24 @@ namespace ccgui
 			// Find the best matching font, taking into account info about rendering scale.
 			// If things are rendered with twice the size, let's squeeze in more texels there.
 			const float actual_pixel_size = rendering_scale_hint * pixel_size;
+			float scaling = 1.0f;
 
 			for (int i=0;i!=source_font->Outputs_size;i++)
 			{
-				outki::FontOutput *fo = &source_font->Outputs[i];
+				const outki::FontOutput *fo = &source_font->Outputs[i];
 				PTK_FATAL_ASSERT(fo)
 
 				float d = actual_pixel_size - fo->PixelSize;
 				if (d < 0)
 				{
-					d = -d;
+					d = -0.30f * d;
 				}
 
 				if (!i || d < diff)
 				{
 					diff = d;
 					best_index = i;
+					scaling = pixel_size / fo->PixelSize;
 				}
 			}
 
@@ -93,6 +96,7 @@ namespace ccgui
 			}
 
 			const int MAX_GLYPHS = 4096;
+			bool word_break[MAX_GLYPHS];
 			int glyph_id[MAX_GLYPHS];
 			int glyphs = 0;
 
@@ -108,6 +112,7 @@ namespace ccgui
 						KOSMOS_WARNING("String contains more than max number of glyphs " << MAX_GLYPHS)
 						break;
 					}
+					word_break[glyphs] = (codepoint == ' ');
 					glyph_id[glyphs++] = (int) codepoint;
 				}
 			}
@@ -115,38 +120,108 @@ namespace ccgui
 			if (state != UTF8_ACCEPT)
 				KOSMOS_WARNING("String contains invalid utf8");
 
-			outki::FontOutput *fontdata = &source_font->Outputs[best_index];
+			const outki::FontOutput *fontdata = &source_font->Outputs[best_index];
 
 			layout_data *layout = new layout_data();
 			layout->fontdata = fontdata;
 			layout->glyphs_size = glyphs;
 			layout->glyphs = new layout_glyph[glyphs];
-			
+
+			// lookup and translate, might output less glyphs than allocated
+			// if the font does not contain all.
+			layout->glyphs_size = 0;
 			for (int i=0;i!=glyphs;i++)
 			{
-				outki::FontGlyph *gldata = 0;
-				layout_glyph *current = &layout->glyphs[i];
-				
+				const outki::FontGlyph *gldata = 0;
+
 				for (int j=0;j!=fontdata->Glyphs_size;j++)
 				{
 					if (fontdata->Glyphs[j].glyph == glyph_id[i])
 					{
-						gldata = &fontdata->Glyphs[j];
+						const int pos = layout->glyphs_size++;
+
+						// store the re-mapped glyph id in the array
+						glyph_id[pos] = j;
+						layout->glyphs[pos].glyph = gldata;
 						break;
 					}
 				}
-				
-				current->glyph = gldata;
-				
-				if (!gldata)
-					continue;
-
-				current->x0 = i * 20;
-				current->y0 = 0;
-				current->x1 = i * 20 + gldata->pixelWidth;
-				current->y1 = gldata->pixelHeight;
 			}
-			
+
+			int bounds_x0, bounds_y0;
+			int bounds_x1, bounds_y1;
+
+			float pen_break = max_width * fontdata->BBoxMaxY / 64.0f;
+			int y_ofs = 0;
+			int pen = 0;
+
+			// do actual layouting.
+			layout->lines = 0;
+			int scaling_int = (int)(64 * scaling);
+			for (int i=0;i!=layout->glyphs_size;i++)
+			{
+				const outki::FontGlyph *glyph = &fontdata->Glyphs[glyph_id[i]];
+				layout_glyph *current = &layout->glyphs[i];
+
+				if (pen > 0)
+				{
+					int left = glyph_id[i-1];
+					int right = glyph_id[i];
+
+					for (int k=0;k!=fontdata->KerningCharL_size;k++)
+					{
+						if (fontdata->KerningCharL[k] == left && fontdata->KerningCharR[k] == right)
+						{
+							pen += (int)(scaling * fontdata->KerningOfs[k]);
+							break;
+						}
+					}
+				}
+
+				const int x = (float)(scaling * ((pen + glyph->bearingX) / 64.0f));
+				const int y = (float)(scaling * (((y_ofs + glyph->bearingY) >> 6)));
+				const int w = (float)(scaling * glyph->pixelWidth);
+				const int h = (float)(scaling * glyph->pixelHeight);
+
+				current->x0 = x;
+				current->y0 = y;
+				current->x1 = x + w;
+				current->y1 = y + h;
+				current->glyph = glyph;
+
+				current->x0 = ((int)(current->x0 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
+				current->y0 = ((int)(current->y0 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
+				current->x1 = ((int)(current->x1 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
+				current->y1 = ((int)(current->y1 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
+
+				pen += glyph->advance;
+
+				if (pen_break > 0 && pen > pen_break)
+				{
+					// do word wrap.
+					int k = i;
+					while (k > 0)
+					{
+						if (word_break[k])
+						{
+							// leave the wordbreak on that line and start next
+							i = k;
+							pen = 0;
+							y_ofs += fontdata->BBoxMaxY - fontdata->BBoxMinY;
+							break;
+						}
+						k--;
+					}
+					// reset to a new line
+					if (pen == 0)
+					{
+						// relayout from here.
+						layout->lines++;
+						continue;
+					}
+				}
+			}
+
 			return layout;
 		}
 
@@ -159,7 +234,7 @@ namespace ccgui
 				if (!cur->glyph)
 					continue;
 					
-				outki::FontGlyph *glyph = cur->glyph;
+				const outki::FontGlyph *glyph = cur->glyph;
 		
 				kosmos::render::tex_rect(tex,
 					x + cur->x0,
@@ -173,10 +248,10 @@ namespace ccgui
 					0xffffffff
 				);
 			}
-		/*
-			kosmos::render::tex_rect(tex,
-					0, 0, 256, 256, 0, 0, 1, 1, 0xffffffff);
-		*/
+
+//			kosmos::render::tex_rect(tex,
+//					0, 0, 256, 256, 0, 0, 1, 1, 0xffffffff);
+
 			kosmos::render::unload_texture(tex);
 		}
 

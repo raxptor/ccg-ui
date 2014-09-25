@@ -24,6 +24,9 @@ namespace ccgui
 			ccgui::uiscreen::instance *screen;
 			ccgui::uicontext *context;
 			element_handler_set *handlers;
+			float layout_scale;
+			float layout_offset_x, layout_offset_y;
+			float render_scaling_hint; // how big layout pixels are in real pixels
 		};
 
 		instance * create(outki::UIScreen *screen, element_handler_set *handlers);

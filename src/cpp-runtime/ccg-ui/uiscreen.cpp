@@ -3,6 +3,7 @@
 #include <putki/liveupdate/liveupdate.h>
 #include <outki/types/ccg-ui/Elements.h>
 #include <kosmos/render/render.h>
+#include <kosmos/render/render2d.h>
 #include <ccg-ui/uielement.h>
 #include <ccg-ui/uiwidget.h>
 #include <ccg-ui/elements/builtins.h>
@@ -53,7 +54,7 @@ namespace ccgui
 			delete r;
 		}
 
-		void draw(instance *d, uicontext *context, float x0, float y0, float x1, float y1)
+		void draw(instance *d, kosmos::render2d::stream *stream, uicontext *context, float x0, float y0, float x1, float y1)
 		{
 			LIVE_UPDATE(&d->data);
 			LIVE_UPDATE(&d->data->Config);
@@ -83,6 +84,7 @@ namespace ccgui
 			ri.context = context;
 			ri.handlers = d->handlers;
 			ri.render_scaling_hint = 1.0f;
+			ri.stream = stream;
 
 			bool pushed_matrix = false;
 
@@ -110,8 +112,8 @@ namespace ccgui
 				if (d->data->Config->ScaleMode == outki::ScaleMode_Prop_Transform)
 				{
 					pushed_matrix = true;
-					kosmos::render::push_matrix();
-					kosmos::render::transform_2d(scale, scale, (int)_x0/scale, (int)_y0/scale);
+					kosmos::render2d::set_2d_transform(stream, scale, scale, (int)_x0/scale, (int)_y0/scale);
+
 					ri.render_scaling_hint = scale;
 
 					// compute un-scaled rect at 0,0 since above transform takes it to x0 y0

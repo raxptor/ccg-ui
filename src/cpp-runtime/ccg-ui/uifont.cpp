@@ -9,6 +9,7 @@
 
 #include <kosmos/log/log.h>
 #include <kosmos/render/render.h>
+#include <kosmos/render/render2d.h>
 
 #include <vector>
 
@@ -206,7 +207,7 @@ namespace ccgui
 			return layout;
 		}
 
-		void layout_draw(layout_data *layout, float x, float y, unsigned long color)
+		void layout_draw(kosmos::render2d::stream *stream, layout_data *layout, float x, float y, unsigned long color)
 		{
 			kosmos::render::loaded_texture *tex = kosmos::render::load_texture(layout->fontdata->OutputTexture);
 			for (int i=0;i<layout->glyphs_size;i++)
@@ -216,8 +217,8 @@ namespace ccgui
 					continue;
 					
 				const outki::FontGlyph *glyph = cur->glyph;
-		
-				kosmos::render::tex_rect(tex,
+
+				kosmos::render2d::tex_rect(stream, tex,
 					x + cur->x0,
 					y + cur->y0,
 					x + cur->x1,
@@ -229,14 +230,10 @@ namespace ccgui
 					color
 				);
 			}
-
-//			kosmos::render::tex_rect(tex,
-//					0, 0, 256, 256, 0, 0, 1, 1, 0xffffffff);
-
 			kosmos::render::unload_texture(tex);
 		}
 
-		void layout_draw_align(layout_data *layout, float x0, float y0, float x1, float y1, int v, int h, unsigned long color)
+		void layout_draw_align(kosmos::render2d::stream *stream, layout_data *layout, float x0, float y0, float x1, float y1, int v, int h, unsigned long color)
 		{
 			float x, y;
 
@@ -270,7 +267,7 @@ namespace ccgui
 					}
 			}
 
-			return layout_draw(layout, x, y, color);
+			return layout_draw(stream, layout, x, y, color);
 		}
 
 		void layout_free(layout_data *layout)

@@ -4,6 +4,7 @@
 #include <ccg-ui/uicontext.h>
 #include <ccg-ui/uiwidget.h>
 #include <kosmos/render/render.h>
+#include <kosmos/render/render2d.h>
 
 namespace ccgui
 {
@@ -23,6 +24,7 @@ namespace ccgui
 		{
 			ccgui::uiscreen::instance *screen;
 			ccgui::uicontext *context;
+			kosmos::render2d::stream *stream;
 			element_handler_set *handlers;
 			float layout_scale;
 			float layout_offset_x, layout_offset_y;
@@ -30,7 +32,7 @@ namespace ccgui
 		};
 
 		instance * create(outki::UIScreen *screen, element_handler_set *handlers);
-		void draw(instance *d, uicontext *context, float x0, float y0, float x1, float y1);
+		void draw(instance *d, kosmos::render2d::stream *stream, uicontext *context, float x0, float y0, float x1, float y1);
 		void free(instance *r);
 
 		bool resolve_texture(instance *d, outki::Texture *texture, resolved_texture * out_resolved, float u0, float v0, float u1, float v1);

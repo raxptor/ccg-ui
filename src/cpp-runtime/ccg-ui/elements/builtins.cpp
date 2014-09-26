@@ -2,6 +2,7 @@
 #include <putki/liveupdate/liveupdate.h>
 
 #include <kosmos/render/render.h>
+#include <kosmos/render/render2d.h>
 #include <kosmos/log/log.h>
 
 #include "ccg-ui/uielement.h"
@@ -19,7 +20,7 @@ namespace ccgui
 		uiscreen::resolved_texture tex;
 		if (uiscreen::resolve_texture(rinfo->screen, element->texture, &tex, 0, 0, 1, 1))
 		{
-			kosmos::render::tex_rect(tex.texture,
+			kosmos::render2d::tex_rect(rinfo->stream, tex.texture,
 				layout->x0, layout->y0, layout->x1, layout->y1,
 				tex.u0, tex.v0, tex.u1, tex.v1, 0xffffffff);
 		}
@@ -100,7 +101,7 @@ namespace ccgui
 		}
 		if (data->label_layout)
 		{
-			uifont::layout_draw_align(data->label_layout, layout->x0, layout->y0, layout->x1, layout->y1, outki::UIVerticalAlignment_Center, outki::UIHorizontalAlignment_Center, 0xffffffff);
+			uifont::layout_draw_align(rinfo->stream, data->label_layout, layout->x0, layout->y0, layout->x1, layout->y1, outki::UIVerticalAlignment_Center, outki::UIHorizontalAlignment_Center, 0xffffffff);
 		}
 	}
 
@@ -119,7 +120,7 @@ namespace ccgui
 		uifont::layout_data *ld = uifont::layout_make(text->font, text->Text, text->pixelSize * rinfo->layout_scale, -1, rinfo->render_scaling_hint);
 		if (ld)
 		{
-			uifont::layout_draw(ld, layout->x0, layout->y0, col2int(text->color));
+			uifont::layout_draw(rinfo->stream, ld, layout->x0, layout->y0, col2int(text->color));
 			uifont::layout_free(ld);
 		}
 	}

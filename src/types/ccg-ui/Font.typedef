@@ -12,7 +12,6 @@ FontGlyph [in, out] non-instantiable
 	float v1
 	int pixelWidth
 	int pixelHeight
-	int[] pixelData
 }
 
 FontGlyphPixData [in, out] non-instantiable

@@ -109,7 +109,7 @@ namespace ccgui
 					}
 				}
 
-				if (true || d->data->Config->ScaleMode == outki::ScaleMode_Prop_Transform)
+				if (d->data->Config->ScaleMode == outki::ScaleMode_Prop_Transform)
 				{
 					pushed_matrix = true;
 					kosmos::render2d::set_2d_transform(stream, scale, scale, (int)_x0/scale, (int)_y0/scale);

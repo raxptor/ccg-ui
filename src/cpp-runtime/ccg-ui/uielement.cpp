@@ -105,8 +105,14 @@ namespace ccgui
 
 		bool mousehittest(uiscreen::renderinfo *rinfo, float x0, float y0, float x1, float y1)
 		{
-			return hittest(rinfo, rinfo->context->input.mouse->x, rinfo->context->input.mouse->y,
-			               x0, y0, x1, y1);
+			float rx, ry;
+			kosmos::render2d::screen_to_local(rinfo->stream,
+				rinfo->context->input.mouse->x,
+				rinfo->context->input.mouse->y,
+				&rx, &ry
+			);
+
+			return hittest(rinfo, rx, ry, x0, y0, x1, y1);
 		}
 
 		bool is_mouseover(uicontext *context, element_id elId)
@@ -157,7 +163,6 @@ namespace ccgui
 					rinfo->context->mouseover = 0;
 				}
 			}
-
 
 			if (clicked)
 			{

@@ -109,7 +109,7 @@ namespace ccgui
 					}
 				}
 
-				if (d->data->Config->ScaleMode == outki::ScaleMode_Prop_Transform)
+				if (true || d->data->Config->ScaleMode == outki::ScaleMode_Prop_Transform)
 				{
 					pushed_matrix = true;
 					kosmos::render2d::set_2d_transform(stream, scale, scale, (int)_x0/scale, (int)_y0/scale);
@@ -149,11 +149,6 @@ namespace ccgui
 			uiwidget::layout(d->root, &ri, &root_layout);
 			uiwidget::update(d->root, &ri);
 			uiwidget::draw(d->root, &ri);
-
-			if (pushed_matrix)
-			{
-				kosmos::render::pop_matrix();
-			}
 		}
 
 		bool resolve_texture(instance *d, outki::Texture *texture, resolved_texture * out_resolved, float u0, float v0, float u1, float v1)

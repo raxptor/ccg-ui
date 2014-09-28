@@ -5,12 +5,13 @@
 
 	CCGUI_LIB_INCLUDES = { CCGUI_PATH .. "/src/" }
 	CCGUI_RT_INCLUDES = { CCGUI_PATH .. "/src/cpp-runtime" }
-	CCGUI_LIB_LINKS = { "ccg-ui-builder", "freetype2", "libpng", "kosmos-builder" }
 	
 	function ccgui_use_builder_lib()
 		putki_typedefs_runtime("src/types", false, CCGUI_PATH)
 		includedirs ( CCGUI_LIB_INCLUDES )
-		links { CCGUI_LIB_LINKS }
+		links { "ccg-ui-builder", "freetype2" }
+		kosmos_use_builder_lib() 
+		putki_use_builder_lib()
 	end
 	
 	function ccgui_use_runtime_lib()

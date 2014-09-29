@@ -90,7 +90,17 @@ namespace ccgui
 			// Compute layouts.
 			for (unsigned int i=0;i<d->elements_size;i++)
 			{
-				LIVE_UPDATE(&d->elements[i].element);
+				if (LIVE_UPDATE(&d->elements[i].element))
+				{
+					element_handler_def *def = d->elements[i].fns;
+					if (def)
+					{
+						// re-init.
+						def->done(d->elements[i].data);
+						d->elements[i].data = def->init(rinfo, d->elements[i].element, 0);
+					}
+				}
+				
 				outki::UIElement *element = d->elements[i].element;
 				if (!element)
 				{

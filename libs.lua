@@ -8,8 +8,6 @@
 		putki_typedefs_builder("src/types", false, CCGUI_PATH)
 		includedirs ( CCGUI_LIB_INCLUDES )
 		links { "ccg-ui-builder", "freetype2" }
-		kosmos_use_builder_lib() 
-		putki_use_builder_lib()
 	end
 	
 	project "ccg-ui-builder"

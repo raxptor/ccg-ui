@@ -15,6 +15,16 @@ FontGlyph [in, out] non-instantiable
 	int[] pixelData
 }
 
+FontGlyphPixRow [in, out] non-instantiable
+{
+	byte[] pixels
+}
+
+FontCompression [in, out] non-instantiable
+{
+	FontGlyphPixRow[] rows
+}
+
 FontGlyphPixData [in, out] non-instantiable
 {
 	int glyph
@@ -26,10 +36,12 @@ FontGlyphPixData [in, out] non-instantiable
 	byte[] pixelData
 }
 
+
 FontOutput [in, out] non-instantiable
 {
 	[hidden] ptr Texture OutputTexture
 	[hidden] FontGlyph[] Glyphs
+	[hidden] ptr FontCompression Compression
 	[hidden] FontGlyphPixData[] PixGlyphs
 	[hidden] int[] KerningCharL
 	[hidden] int[] KerningCharR

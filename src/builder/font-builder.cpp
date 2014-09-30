@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 #include <builder/pngutil.h>
 
@@ -17,6 +18,8 @@
 #include FT_FREETYPE_H
 
 #include <binpacker/maxrects_binpack.h> // NOTE: Claw include.
+
+#include "rowcache.h"
 
 struct TmpGlyphInfo
 {
@@ -57,6 +60,8 @@ struct fontbuilder : putki::builder::handler_i
 		}
 
 		putki::build_db::add_external_resource_dependency(record, font->Source.c_str(), putki::resource::signature(builder, font->Source.c_str()).c_str());
+		
+		row_cache cache;
 
 		const char *fnt_data;
 		long long fnt_len;
@@ -249,8 +254,17 @@ struct fontbuilder : putki::builder::handler_i
 						pd.bearingX = g.bearingX;
 						pd.bearingY = - g.bearingY;
 						pd.advance = g.advance;
-						for (int l=0;l<g.w*g.h;l++)
-							pd.pixelData.push_back(g.data[l]);
+						for (int r=0;r<g.h;r++)
+						{
+							int ofs = r * g.w;
+							
+							row_cache_add(&cache, &g.data[ofs], g.w);
+			
+							for (int c=0;c<g.w;c++)
+							{
+								pd.pixelData.push_back(g.data[ofs + c]);
+							}
+						}
 //							pd.pixelData.push_back(255* (((l%g.w)%2)^((l/g.w)%2))); // g.data[l]);
 						up.PixGlyphs.push_back(pd);
 					}
@@ -281,6 +295,9 @@ struct fontbuilder : putki::builder::handler_i
 
 				font->Outputs.push_back(up);
 			}
+			
+			row_cache_optimize(&cache);
+			row_cache_print(&cache);
 
 			return false;
 		}
@@ -288,6 +305,7 @@ struct fontbuilder : putki::builder::handler_i
 		{
 			putki::builder::build_error(builder, "Load failed.");
 		}
+
 
 		return false;
 	}

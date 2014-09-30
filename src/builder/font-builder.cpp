@@ -68,6 +68,7 @@ struct fontbuilder : putki::builder::handler_i
 		if (FT_Init_FreeType(&ft))
 		{
 			RECORD_WARNING(record, "Could not initialize freetype");
+			delete [] fnt_data;
 			return false;
 		}
 
@@ -75,8 +76,7 @@ struct fontbuilder : putki::builder::handler_i
 		if (FT_New_Memory_Face(ft, (const FT_Byte *)fnt_data, (FT_Long)fnt_len, 0, &face))
 		{
 			RECORD_WARNING(record, "Could not load font face");
-			FT_Done_FreeType(ft);
-			return false;
+			goto cleanup;
 		}
 
 		for (unsigned int sz=0;sz<font->PixelSizes.size();sz++)
@@ -84,8 +84,7 @@ struct fontbuilder : putki::builder::handler_i
 			if (FT_Set_Pixel_Sizes(face, 0, font->PixelSizes[sz]))
 			{
 				RECORD_WARNING(record, "Could not set char or pixel size.");
-				FT_Done_FreeType(ft);
-				return false;
+				goto cleanup;
 			}
 
 			std::vector< rbp::InputRect > packs;
@@ -105,7 +104,7 @@ struct fontbuilder : putki::builder::handler_i
 				if (FT_Load_Glyph(face, idx, FT_LOAD_NO_BITMAP))
 				{
 					RECORD_WARNING(record, "Could not load glyph face.");
-					return false;
+					continue;
 				}
 
 				if (FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL))
@@ -286,6 +285,8 @@ struct fontbuilder : putki::builder::handler_i
 			font->Outputs.push_back(up);
 		}
 
+cleanup:
+		delete [] fnt_data;
 		FT_Done_FreeType(ft);
 		return false;
 	}

@@ -257,7 +257,7 @@ struct fontbuilder : putki::builder::handler_i
 			}
 
 			for (int i=0;i!=glyphs.size();i++)
-				delete [] glyhps[i].data;
+				delete [] glyphs[i].data;
 
 			// create & insert texture.
 			if (outBmp)

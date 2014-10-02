@@ -27,6 +27,7 @@
         <Variable name="DYLD_LIBRARY_PATH" value="./build" />
       </EnvironmentVariables>
     </EnvironmentVariables>
+    <Commandlineparameters>--reset</Commandlineparameters>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <Optimize>true</Optimize>

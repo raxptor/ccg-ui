@@ -23,7 +23,7 @@ namespace ccguiputkedplugin
 			WidgetViewer wv = new WidgetViewer(m_iWidget);
 			m_vbox.Add(wv);
 
-			wv.SetSizeRequest((int)m_iWidget.get_width(), (int)m_iWidget.get_height());
+			wv.SetSizeRequest((int)m_iWidget.get_width() / 4, (int)m_iWidget.get_height() / 4);
 		}
 	}
 }

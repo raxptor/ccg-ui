@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "putked", "..\..\putki\putke
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "putki-lib", "..\..\putki\putked\putki-lib\putki-lib.csproj", "{72E9BCF0-B1DA-4789-A676-C2ABAB38FCDD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kosmos-putked-plugin", "..\..\kosmos\putked\kosmos-putked-plugin\kosmos-putked-plugin.csproj", "{590335F1-7BF2-48AC-B9F9-A1FE613D982F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -20,6 +22,12 @@ Global
 		{168A9417-EB78-4C88-B52F-A5BC0D5C0D61}.Debug|x86.Build.0 = Debug|x86
 		{168A9417-EB78-4C88-B52F-A5BC0D5C0D61}.Release|x86.ActiveCfg = Release|x86
 		{168A9417-EB78-4C88-B52F-A5BC0D5C0D61}.Release|x86.Build.0 = Release|x86
+		{590335F1-7BF2-48AC-B9F9-A1FE613D982F}.Debug/x64|x86.ActiveCfg = Debug|Any CPU
+		{590335F1-7BF2-48AC-B9F9-A1FE613D982F}.Debug/x64|x86.Build.0 = Debug|Any CPU
+		{590335F1-7BF2-48AC-B9F9-A1FE613D982F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{590335F1-7BF2-48AC-B9F9-A1FE613D982F}.Debug|x86.Build.0 = Debug|Any CPU
+		{590335F1-7BF2-48AC-B9F9-A1FE613D982F}.Release|x86.ActiveCfg = Release|Any CPU
+		{590335F1-7BF2-48AC-B9F9-A1FE613D982F}.Release|x86.Build.0 = Release|Any CPU
 		{7002CF71-62EA-463B-B48B-DC71EBFD2CA0}.Debug/x64|x86.ActiveCfg = Debug|x86
 		{7002CF71-62EA-463B-B48B-DC71EBFD2CA0}.Debug/x64|x86.Build.0 = Debug|x86
 		{7002CF71-62EA-463B-B48B-DC71EBFD2CA0}.Debug|x86.ActiveCfg = Debug|x86

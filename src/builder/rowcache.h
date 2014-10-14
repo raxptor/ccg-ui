@@ -7,6 +7,7 @@ struct row
 	unsigned char start;
 	std::vector<char> data;
 	unsigned int uses;
+	unsigned int comp_data_begin, comp_data_size;
 };
 
 struct row_length
@@ -16,58 +17,69 @@ struct row_length
 
 typedef std::map<unsigned int, row_length> row_cache;
 
-int row_cache_compress(row *in, row *out, char *out_bytes)
+// might cut a bit or two of precision here and there.
+int lossy_rle_encode(std::vector<char> const & input, unsigned char *output)
 {
-	int bytes = 0;
-	
-	for (int i=0;i<in->data.size();i++)
+	int runlength = 0;
+	int old_val;
+	int outsize = 0;
+
+	for (int i=0;i<=input.size();i++)
 	{
-		if (in->data[i] != out->data[i])
+		unsigned int next = 257; // impossible value
+		if (i < input.size())
+		    next = (unsigned char)input[i];
+
+		if (!i || next != old_val || runlength > 126)
 		{
-			bytes += 2;
+			// output old run
+			if (runlength > 1)
+			{
+				output[outsize++] = 0x80 | runlength;
+				output[outsize++] = old_val;
+			}
+			else if (runlength == 1)
+			{
+				if (old_val == 255)
+					old_val = 254;
+				output[outsize++] = (unsigned char)(old_val / 2);
+			}
+
+			// encode new
+			old_val = next;
+			runlength = 1;
+		}
+		else
+		{
+			// equal value.
+			runlength++;
 		}
 	}
-	return bytes;
+
+	return outsize;
 }
 
-void row_cache_optimize(row_cache *cache)
+// compress into rle buffer.
+void row_cache_compress(row_cache *cache, std::vector<unsigned char> *out)
 {
 	row_cache::iterator i = cache->begin();
 	while (i != cache->end())
 	{
-		row_length newout;
-		row_length & input = i->second;
-		// take first
-		std::cout << "comprezion with " << input.rows.size() << std::endl;
-		newout.rows.push_back(input.rows[0]);
-		input.rows.erase(input.rows.begin());
-		
-		while (!input.rows.empty())
+		for (int j=0;j!=i->second.rows.size();j++)
 		{
-			// choose smallest compressed from last output to next input
-			int smallest, diff;
-			for (unsigned int k=0;k<input.rows.size();k++)
-			{
-				char bytes[1024];
-				int d = row_cache_compress(&newout.rows[newout.rows.size()-1], &input.rows[k], bytes);
-				if (!k || d < diff)
-				{
-					diff = d;
-					smallest = k;
-				}
-			}
-			
-			std::cout << "Compressed from " << newout.rows.size() << " to " << smallest << " with " << diff << " bytes (" << i->first << ")" << std::endl;
-			newout.rows.push_back(input.rows[smallest]);
-			input.rows.erase(input.rows.begin() + smallest);
+			row & r = i->second.rows[j];
+
+			unsigned char encoded[2048];
+			r.comp_data_begin = out->size();
+			r.comp_data_size = lossy_rle_encode(r.data, &encoded[0]);
+			out->insert(out->end(), encoded, encoded + r.comp_data_size);
 		}
-		
-		i->second.rows = newout.rows;
 		i++;
 	}
 }
 
-void row_cache_insert(row_cache *cache, row *rd)
+// returns row pointer into structure, only valid till next row is inserted.
+row* row_cache_insert(row_cache *cache, row *rd)
 {
 	row_cache::iterator i = cache->find(rd->totlen);
 	if (i != cache->end())
@@ -75,35 +87,50 @@ void row_cache_insert(row_cache *cache, row *rd)
 		for (unsigned int j=0;j!=i->second.rows.size();j++)
 		{
 			row & cand = i->second.rows[j];
-			if (cand.totlen == rd->totlen && cand.start == cand.start && cand.data == rd->data)
+			if (cand.totlen == rd->totlen && cand.start == rd->start)
 			{
-				std::cout << "Match on " << j << "/" << i->second.rows.size() << std::endl;
+				int err = 0;
+				for (int k=0;k!=cand.data.size();k++)
+				{
+					const int diff = (int)cand.data[k] - (int)rd->data[k];
+					err += diff * diff;
+				}
+
+				int qualityTweak = 0;
+				if (err > cand.data.size()*qualityTweak)
+					continue;
+
 				cand.uses++;
-				return;
+				return &cand;
 			}
 		}
 		
 		i->second.rows.push_back(*rd);
-		std::cout << "Non match, growing to " << i->second.rows.size() << " entries" << std::endl;
-		return;
+		return 0;
 	}
 	else
 	{
 		row_length r;
+		r.rows.push_back(*rd);
 		cache->insert(std::make_pair(rd->totlen, r));
+		return 0;
 	}
 }
 
 void row_cache_print(row_cache *cache)
 {
+	int uncomp_bytes = 0;
+	int comp_bytes = 0;
+
 	row_cache::iterator i = cache->begin();
 	while (i != cache->end())
 	{
 		for (int j=0;j!=i->second.rows.size();j++)
 		{
 			const row & r = i->second.rows[j];
-			if (r.uses > 1)
-				std::cout << "length " << i->first << " uses=" << r.uses << std::endl;
+			if (r.uses < 2)
+				continue;
+
 			int k = 0;
 			std::cout << "printing " << i->first << " [" << j << "] rtart=" << (int)r.start << " data=" << r.data.size() << std::endl;
 			while (k != r.start)
@@ -121,22 +148,24 @@ void row_cache_print(row_cache *cache)
 					std::cout << ".";
 				k++;
 			}
-			
-			std::cout << "   outputed " << k << std::endl;
-			/*
-			while (k != i->first)
-			{
-				std::cout << ".";
-				k++;
-			}
-			*/
+
+			unsigned char encoded[2048];
+			int bytes = lossy_rle_encode(r.data, &encoded[0]);
+
+			std::cout << "   outputed " << k <<  " rle=" << bytes << " bytes, uses=" << r.uses << std::endl;
+
+			comp_bytes += bytes;
+			uncomp_bytes += r.data.size();
+
+			// rle encode
 			std::cout << std::endl;
 		}
 		i++;
 	}
+	std::cout << "Raw image data is " << uncomp_bytes << " bytes, rle compressed is " << comp_bytes << std::endl;
 }
 
-void row_cache_add(row_cache *cache, char *data, int length)
+row* row_cache_add(row_cache *cache, char *data, int length)
 {
 	// figure out start
 	int start = 0, end = length - 1;
@@ -146,22 +175,20 @@ void row_cache_add(row_cache *cache, char *data, int length)
 	end++;
 		
 	if (end <= start)
-	{
-		std::cout << "Blank row." << std::endl;
-		return;
-	}
-	
-	if (start > 255) start = 255;
+		return 0;
+
+	if (start > 255)
+		start = 255;
 
 	row r;
 	r.start = 0;
 	r.totlen = end;
 	r.uses = 1;
+	r.comp_data_size = 0;
+	r.comp_data_begin = ~0;
 
-	std::cout << "Row[" << length << "] start=" << start << " end=" << end << " totlen=" << r.totlen << std::endl;
-	
 	for (int i=0;i<end;i++)
 		r.data.push_back(data[i]);
 		
-	row_cache_insert(cache, &r);
+	return row_cache_insert(cache, &r);
 }

@@ -26,5 +26,6 @@
 		includedirs { "external/freetype-2.5.3/include"}
 
 		files { "src/builder/*.cpp" }
+		files { "src/builder/**.h" }
 		links { "freetype2" }
 		links { "libpng" }

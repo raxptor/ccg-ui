@@ -30,17 +30,22 @@ FontGlyphPixData [in, out] non-instantiable
 	int advance
 	int bearingX
 	int bearingY
-	int pixelWidth
-	int pixelHeight
-	byte[] pixelData
-}
+	byte pixelWidth
+	byte pixelHeight
 
+	// These point into the main Fonts RLEData output, which
+	// is shared between all sizes. These arrays are pixelHeight long.
+	int[] rleDataBegin
+	byte[] rleDataLength
+
+	// This is just for convenience caching in the builder.
+	[no-out] byte[] pixelData
+}
 
 FontOutput [in, out] non-instantiable
 {
 	[hidden] ptr Texture OutputTexture
 	[hidden] FontGlyph[] Glyphs
-	[hidden] ptr FontCompression Compression
 	[hidden] FontGlyphPixData[] PixGlyphs
 	[hidden] int[] KerningCharL
 	[hidden] int[] KerningCharR
@@ -59,4 +64,5 @@ Font [in, out]
 	[no-out] int[] PixelSizes
 	[no-out] ptr TextureConfiguration TextureConfiguration
 	[hidden] FontOutput[] Outputs
+	[hidden] byte[] RLEData
 }

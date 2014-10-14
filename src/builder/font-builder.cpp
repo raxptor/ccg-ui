@@ -61,7 +61,7 @@ struct fontbuilder : putki::builder::handler_i
 		}
 
 		putki::build_db::add_external_resource_dependency(record, font->Source.c_str(), putki::resource::signature(builder, font->Source.c_str()).c_str());
-		
+
 		row_cache cache;
 
 		const char *fnt_data;
@@ -84,8 +84,13 @@ struct fontbuilder : putki::builder::handler_i
 		if (FT_New_Memory_Face(ft, (const FT_Byte *)fnt_data, (FT_Long)fnt_len, 0, &face))
 		{
 			RECORD_WARNING(record, "Could not load font face");
-			goto cleanup;
+			delete [] fnt_data;
+			FT_Done_FreeType(ft);
+			return false;
 		}
+
+		int totalGlyphs = 0;
+		int totalGlyphPixelData = 0;
 
 		for (unsigned int sz=0;sz<font->PixelSizes.size();sz++)
 		{
@@ -247,6 +252,9 @@ struct fontbuilder : putki::builder::handler_i
 					}
 				}
 
+				totalGlyphPixelData += g.w * g.h;
+				totalGlyphs++;
+
 				if (font->OutputPixelData)
 				{
 					// These do not have any u/v data, only the pixel data itself for run-time atlas generation/rendering.
@@ -260,13 +268,10 @@ struct fontbuilder : putki::builder::handler_i
 					for (int r=0;r<g.h;r++)
 					{
 						int ofs = r * g.w;
-						
 						row_cache_add(&cache, &g.data[ofs], g.w);
-		
+	
 						for (int c=0;c<g.w;c++)
-						{
 							pd.pixelData.push_back(g.data[ofs + c]);
-						}
 					}
 					up.PixGlyphs.push_back(pd);
 				}
@@ -279,7 +284,7 @@ struct fontbuilder : putki::builder::handler_i
 			if (outBmp)
 			{
 				std::stringstream ss;
-				ss << path << "_" << font->PixelSizes[sz] << "_glyphs";
+				ss << path << "_i" << sz << "_px" << font->PixelSizes[sz] << "_glyphs";
 
 				std::string outpath = ss.str();
 				std::string output_atlas_path = ss.str() + ".png";
@@ -292,26 +297,61 @@ struct fontbuilder : putki::builder::handler_i
 				texture->Configuration = font->TextureConfiguration;
 
 				// give font the texture.
+
 				up.OutputTexture = texture;
 
 				// add it so it will be built.
 				add_output(context, record, outpath.c_str(), texture);
 				delete [] outBmp;
 			}
-			
-			row_cache_optimize(&cache);
-			row_cache_print(&cache);
 
 			font->Outputs.push_back(up);
 		}
 
-<<<<<<< HEAD
+		if (font->OutputPixelData)
+		{
+			// post processing
+			font->RLEData.clear();
+			row_cache_compress(&cache, &font->RLEData);
 
-=======
+			RECORD_INFO(record, "Font contains " << totalGlyphs << " and total pixel data " << totalGlyphPixelData);
+			RECORD_INFO(record, "Pixel data RLE compressed to " << font->RLEData.size());
+
+			for (int i=0;i<font->Outputs.size();i++)
+			{
+				inki::FontOutput *out = &font->Outputs[i];
+				for (int j=0;j!=out->PixGlyphs.size();j++)
+				{
+					inki::FontGlyphPixData *pd = &out->PixGlyphs[j];
+
+					for (int h=0;h<pd->pixelHeight;h++)
+					{
+						int ofs = h * pd->pixelWidth;
+						row *r = row_cache_add(&cache, (char*) &pd->pixelData[ofs], pd->pixelWidth);
+						if (r && (r->comp_data_begin + r->comp_data_size) > font->RLEData.size())
+							RECORD_ERROR(record, "Internal build error in glyph cache, row_cache_add returned bad on known glyph row.")
+
+						if (!r)
+						{
+							pd->rleDataBegin.push_back(0);
+							pd->rleDataLength.push_back(0);
+						}
+						else
+						{
+							pd->rleDataBegin.push_back(r->comp_data_begin);
+							pd->rleDataLength.push_back(r->comp_data_size);
+						}
+					}
+
+					pd->pixelData.clear();
+				}
+			}
+
+		}
+
 cleanup:
 		delete [] fnt_data;
 		FT_Done_FreeType(ft);
->>>>>>> master
 		return false;
 	}
 };

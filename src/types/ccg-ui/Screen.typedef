@@ -1,5 +1,5 @@
+%include types/kosmos/Atlas.typedef
 #include Elements.typedef
-#include Atlas.typedef
 
 enum UIScaleMode
 {

@@ -1,4 +1,4 @@
-#include Texture.typedef
+%include types/kosmos/Texture.typedef
 
 FontGlyph [in, out] non-instantiable
 {
@@ -12,7 +12,6 @@ FontGlyph [in, out] non-instantiable
 	float v1
 	int pixelWidth
 	int pixelHeight
-	int[] pixelData
 }
 
 FontGlyphPixRow [in, out] non-instantiable
@@ -58,6 +57,6 @@ Font [in, out]
 	[no-out] bool OutputPixelData = false
 	[no-out] int[] Characters
 	[no-out] int[] PixelSizes
-	ptr TextureConfiguration TextureConfiguration
+	[no-out] ptr TextureConfiguration TextureConfiguration
 	[hidden] FontOutput[] Outputs
 }

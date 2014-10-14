@@ -41,7 +41,7 @@ namespace ccguiputkedplugin
 						{
 							inki.UIRect lr = el.get_layout();						
 							Gdk.Rectangle r = new Gdk.Rectangle((int)lr.get_x(), (int)lr.get_y(), (int)lr.get_width(), (int)lr.get_height());
-							Console.WriteLine("And it is " + r);
+							Console.WriteLine("And it is " + el.m_mi.GetPutkiType().Name + " " + r);
 							GdkWindow.DrawRectangle(g, false, r);
 						}
 					}

@@ -84,63 +84,60 @@ public class UIRenderer
 	{
 		string imgPath = null;
 
-		outki.TextureOutputPng png = tex.Output as outki.TextureOutputPng;
-		if (png != null)
-		{
-			imgPath = png.PngPath;
-		}
+		outki.TextureOutput to = tex.Output as outki.TextureOutput;
+		if (to == null)
+			return null;
 
-		outki.TextureOutputJpeg jpeg = tex.Output as outki.TextureOutputJpeg;
-		if (jpeg != null)
-		{
-			imgPath = jpeg.JpegPath;
-		}
+		outki.DataContainer container = to.Data;
+		if (container == null)
+			return null;
 
-		if (imgPath != null)
-		{
-			foreach (LoadedTexture lt in loaded)
-			{
-				if (lt.path == imgPath)
-				{
-					return lt;
-				}
-			}
-
-			UnityEngine.Debug.Log("Loading img [" + imgPath + "]");
-
-			LoadedTexture ld = new LoadedTexture();
-
-			TextAsset ta = Resources.Load(imgPath.Replace("Resources/",""), typeof(TextAsset)) as TextAsset;
-			if (ta != null)
-			{
-				ld.unityTexture = new Texture2D (4, 4);
-				ld.unityTexture.LoadImage(ta.bytes);
-				ld.unityTexture.filterMode = FilterMode.Bilinear;
-				ld.unityTexture.anisoLevel = 0;
-			}
-			else
-			{
-				// Try loading texture asset
-				ld.unityTexture = Resources.Load(imgPath.Replace("Resources/","").Replace(".png", "")) as Texture2D;
-				if (ld.unityTexture == null)
-				{
-					UnityEngine.Debug.LogError("Failed to load texture [" + imgPath + "]");
-					return null;
-				}
-			}
-
-			ld.unityTexture.wrapMode = TextureWrapMode.Clamp;
-
-			ld.material = new Material(TexturedShader);
-			ld.material.mainTexture = ld.unityTexture;
-			ld.path = imgPath;
-			loaded.Add(ld);
-			
-			UnityEngine.Debug.Log("Loaded texture " + imgPath + " it is "+ ld.unityTexture);		
-			return ld;
-		}
+		outki.DataContainerOutputFile output = container.Output as outki.DataContainerOutputFile;
+		if (output == null)
+			return null;
+	
+		imgPath = output.FilePath;
 		
-		return null;
+		foreach (LoadedTexture lt in loaded)
+		{
+			if (lt.path == imgPath)
+			{
+				return lt;
+			}
+		}
+
+		UnityEngine.Debug.Log("Loading img [" + imgPath + "]");
+
+		LoadedTexture ld = new LoadedTexture();
+
+		TextAsset ta = Resources.Load(imgPath.Replace("Resources/",""), typeof(TextAsset)) as TextAsset;
+		if (ta != null)
+		{
+			ld.unityTexture = new Texture2D (4, 4);
+			ld.unityTexture.LoadImage(ta.bytes);
+			ld.unityTexture.filterMode = FilterMode.Bilinear;
+			ld.unityTexture.anisoLevel = 0;
+		}
+		else
+		{
+			// Try loading texture asset
+			ld.unityTexture = Resources.Load(imgPath.Replace("Resources/","").Replace(".png", "")) as Texture2D;
+			if (ld.unityTexture == null)
+			{
+				UnityEngine.Debug.LogError("Failed to load texture [" + imgPath + "]");
+				return null;
+			}
+		}
+
+		ld.unityTexture.wrapMode = TextureWrapMode.Clamp;
+
+		ld.material = new Material(TexturedShader);
+		ld.material.mainTexture = ld.unityTexture;
+		ld.path = imgPath;
+		loaded.Add(ld);
+		
+		UnityEngine.Debug.Log("Loaded texture " + imgPath + " it is "+ ld.unityTexture);		
+		return ld;
 	}
 	
 	public static Texture ResolveTextureUV(outki.Texture tex, float u0, float v0, float u1, float v1)

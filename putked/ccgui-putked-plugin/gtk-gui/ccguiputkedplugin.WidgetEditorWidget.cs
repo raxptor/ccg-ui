@@ -5,6 +5,7 @@ namespace ccguiputkedplugin
 	public partial class WidgetEditorWidget
 	{
 		private global::Gtk.VBox m_vbox;
+		
 		private global::Gtk.Label m_title;
 
 		protected virtual void Build ()

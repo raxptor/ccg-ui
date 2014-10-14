@@ -4,6 +4,18 @@ namespace ccguiputkedplugin
 {
 	public partial class WidgetEditWindow
 	{
+		private global::Gtk.HBox m_hbox;
+		
+		private global::Gtk.ScrolledWindow GtkScrolledWindow;
+		
+		private global::Gtk.TreeView m_layers;
+		
+		private global::Gtk.VBox m_vbox;
+		
+		private global::Gtk.VBox m_widgetBox;
+		
+		private global::Gtk.VBox m_propBox;
+
 		protected virtual void Build ()
 		{
 			global::Stetic.Gui.Initialize (this);
@@ -11,12 +23,51 @@ namespace ccguiputkedplugin
 			this.Name = "ccguiputkedplugin.WidgetEditWindow";
 			this.Title = global::Mono.Unix.Catalog.GetString ("WidgetEditWindow");
 			this.WindowPosition = ((global::Gtk.WindowPosition)(4));
+			// Container child ccguiputkedplugin.WidgetEditWindow.Gtk.Container+ContainerChild
+			this.m_hbox = new global::Gtk.HBox ();
+			this.m_hbox.Name = "m_hbox";
+			this.m_hbox.Spacing = 6;
+			// Container child m_hbox.Gtk.Box+BoxChild
+			this.GtkScrolledWindow = new global::Gtk.ScrolledWindow ();
+			this.GtkScrolledWindow.Name = "GtkScrolledWindow";
+			this.GtkScrolledWindow.ShadowType = ((global::Gtk.ShadowType)(1));
+			// Container child GtkScrolledWindow.Gtk.Container+ContainerChild
+			this.m_layers = new global::Gtk.TreeView ();
+			this.m_layers.CanFocus = true;
+			this.m_layers.Name = "m_layers";
+			this.GtkScrolledWindow.Add (this.m_layers);
+			this.m_hbox.Add (this.GtkScrolledWindow);
+			global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.m_hbox [this.GtkScrolledWindow]));
+			w2.Position = 0;
+			// Container child m_hbox.Gtk.Box+BoxChild
+			this.m_vbox = new global::Gtk.VBox ();
+			this.m_vbox.Name = "m_vbox";
+			this.m_vbox.Spacing = 6;
+			// Container child m_vbox.Gtk.Box+BoxChild
+			this.m_widgetBox = new global::Gtk.VBox ();
+			this.m_widgetBox.Name = "m_widgetBox";
+			this.m_widgetBox.Spacing = 6;
+			this.m_vbox.Add (this.m_widgetBox);
+			global::Gtk.Box.BoxChild w3 = ((global::Gtk.Box.BoxChild)(this.m_vbox [this.m_widgetBox]));
+			w3.Position = 0;
+			// Container child m_vbox.Gtk.Box+BoxChild
+			this.m_propBox = new global::Gtk.VBox ();
+			this.m_propBox.Name = "m_propBox";
+			this.m_propBox.Spacing = 6;
+			this.m_vbox.Add (this.m_propBox);
+			global::Gtk.Box.BoxChild w4 = ((global::Gtk.Box.BoxChild)(this.m_vbox [this.m_propBox]));
+			w4.Position = 1;
+			this.m_hbox.Add (this.m_vbox);
+			global::Gtk.Box.BoxChild w5 = ((global::Gtk.Box.BoxChild)(this.m_hbox [this.m_vbox]));
+			w5.Position = 1;
+			this.Add (this.m_hbox);
 			if ((this.Child != null)) {
 				this.Child.ShowAll ();
 			}
 			this.DefaultWidth = 400;
 			this.DefaultHeight = 300;
 			this.Show ();
+			this.m_layers.CursorChanged += new global::System.EventHandler (this.OnMLayersCursorChanged);
 		}
 	}
 }

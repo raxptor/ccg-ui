@@ -1,23 +1,60 @@
 #include <outki/types/ccg-ui/Elements.h>
-#include <ccg-ui/ccg-renderer.h>
+#include <putki/liveupdate/liveupdate.h>
+
+#include <kosmos/render/render.h>
+#include <kosmos/render/render2d.h>
+
 #include <ccg-ui/uielement.h>
 #include <ccg-ui/uiscreen.h>
 #include <ccg-ui/uicontext.h>
-#include <putki/liveupdate/liveupdate.h>
+#include <ccg-ui/elements/builtins.h>
 
 #include <stdio.h>
+#include <iostream>
+#include <map>
 
 namespace ccgui
 {
+	typedef std::map<int, element_handler_def> HandlersMap;
+	
+	struct element_handler_set
+	{
+		HandlersMap h;
+	};
+	
+	element_handler_def *get_element_handler(element_handler_set *set, int type)
+	{
+		HandlersMap::iterator i = set->h.find(type);
+		if (i != set->h.end())
+			return &i->second;
+		return 0;
+	}
+	
+	void set_element_handler(element_handler_set *set, int type, element_handler_def const & def)
+	{
+		set->h[type] = def;
+	}
+	
+	element_handler_set *create_element_handler_set()
+	{
+		return new element_handler_set;
+	}
+	
+	void free_element_handler_set(element_handler_set *set)
+	{
+		delete set;
+	}
+
 	namespace uielement
 	{
 		void draw_fill(uiscreen::renderinfo *rinfo, float x0, float y0, float x1, float y1, outki::UIFill *fill)
 		{
 			LIVE_UPDATE(&fill);
+
 			if (outki::UIGradientFill *g = fill->exact_cast<outki::UIGradientFill>())
 			{
-				rinfo->backend->gradient_rect(x0, y0, x1, y1, ccgui::col2int(&g->topleft),
-				                              ccgui::col2int(&g->topright), ccgui::col2int(&g->bottomleft), ccgui::col2int(&g->bottomright));
+				kosmos::render2d::gradient_rect(rinfo->stream, x0, y0, x1, y1, col2int(g->topleft),
+				                              col2int(g->topright), col2int(g->bottomleft), col2int(g->bottomright));
 			}
 			else if (outki::UISlice9Fill *g = fill->exact_cast<outki::UISlice9Fill>())
 			{
@@ -50,8 +87,12 @@ namespace ccgui
 						{
 							continue;
 						}
-
-						rinfo->backend->tex_rect(g->texture, xs[x], ys[y], xs[x+1], ys[y+1], us[x], vs[y], us[x+1], vs[y+1], 0xffffffff);
+						
+						uiscreen::resolved_texture rt;
+						if (uiscreen::resolve_texture(rinfo->screen, g->texture, &rt, us[x], vs[y], us[x+1], vs[y+1]))
+						{
+							kosmos::render2d::tex_rect(rinfo->stream, rt.texture, xs[x], ys[y], xs[x+1], ys[y+1], rt.u0, rt.v0, rt.u1, rt.v1, 0xffffffff);
+						}
 					}
 				}
 			}
@@ -64,8 +105,14 @@ namespace ccgui
 
 		bool mousehittest(uiscreen::renderinfo *rinfo, float x0, float y0, float x1, float y1)
 		{
-			return hittest(rinfo, rinfo->context->input.mouse->x, rinfo->context->input.mouse->y,
-			               x0, y0, x1, y1);
+			float rx, ry;
+			kosmos::render2d::screen_to_local(rinfo->stream,
+				rinfo->context->input.mouse->x,
+				rinfo->context->input.mouse->y,
+				&rx, &ry
+			);
+
+			return hittest(rinfo, rx, ry, x0, y0, x1, y1);
 		}
 
 		bool is_mouseover(uicontext *context, element_id elId)
@@ -116,8 +163,6 @@ namespace ccgui
 					rinfo->context->mouseover = 0;
 				}
 			}
-
-
 
 			if (clicked)
 			{

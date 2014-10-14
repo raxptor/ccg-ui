@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{7002CF71-62EA-463B-B48B-DC71EBFD2CA0}</ProjectGuid>
     <OutputType>WinExe</OutputType>
@@ -16,11 +16,11 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
+    <OutputPath>bin\</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <ConsolePause>false</ConsolePause>
     <EnvironmentVariables>
       <EnvironmentVariables>
@@ -30,10 +30,10 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
+    <OutputPath>bin\</OutputPath>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <ConsolePause>false</ConsolePause>
     <EnvironmentVariables>
       <EnvironmentVariables>
@@ -88,13 +88,17 @@
     <Folder Include="ccg-gen\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\putki\putked\putki-lib\putki-lib.csproj">
+      <Project>{72E9BCF0-B1DA-4789-A676-C2ABAB38FCDD}</Project>
+      <Name>putki-lib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\putki\putked\putked\putked.csproj">
       <Project>{168A9417-EB78-4C88-B52F-A5BC0D5C0D61}</Project>
       <Name>putked</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\putki\putked\putki-lib\putki-lib.csproj">
-      <Project>{72E9BCF0-B1DA-4789-A676-C2ABAB38FCDD}</Project>
-      <Name>putki-lib</Name>
+    <ProjectReference Include="..\..\..\kosmos\putked\kosmos-putked-plugin\kosmos-putked-plugin.csproj">
+      <Project>{590335F1-7BF2-48AC-B9F9-A1FE613D982F}</Project>
+      <Name>kosmos-putked-plugin</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

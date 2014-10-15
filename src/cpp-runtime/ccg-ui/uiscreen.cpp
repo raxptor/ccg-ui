@@ -54,7 +54,7 @@ namespace ccgui
 			delete r;
 		}
 
-		void draw(instance *d, kosmos::render2d::stream *stream, uicontext *context, float x0, float y0, float x1, float y1)
+		void draw(instance *d, kosmos::render2d::stream *stream, glyphcache::data *cache, uicontext *context, float x0, float y0, float x1, float y1)
 		{
 			LIVE_UPDATE(&d->data);
 			LIVE_UPDATE(&d->data->Config);
@@ -70,8 +70,8 @@ namespace ccgui
 				const float xs = (x1 - x0) / d->data->Root->width;
 				const float ys = (y1 - y0) / d->data->Root->height;
 				const float s = xs < ys ? xs : ys;
-				const float w = s * d->data->Root->width;
-				const float h = s * d->data->Root->height;
+				const float w = floorf(s * d->data->Root->width);
+				const float h = floorf(s * d->data->Root->height);
 
 				_x0 = floorf((x0 + x1 - w) / 2.0f);
 				_y0 = floorf((y0 + y1 - h) / 2.0f);
@@ -84,6 +84,7 @@ namespace ccgui
 			ri.context = context;
 			ri.handlers = d->handlers;
 			ri.render_scaling_hint = 1.0f;
+			ri.glyph_cache = cache;
 			ri.stream = stream;
 
 			bool pushed_matrix = false;
@@ -117,8 +118,8 @@ namespace ccgui
 					ri.render_scaling_hint = scale;
 
 					// compute un-scaled rect at 0,0 since above transform takes it to x0 y0
-					_x1 = (_x1 - _x0) / scale;
-					_y1 = (_y1 - _y0) / scale;
+					_x1 = floorf((_x1 - _x0) / scale);
+					_y1 = floorf((_y1 - _y0) / scale);
 					_x0 = 0;
 					_y0 = 0;
 					scale = 1.0f;

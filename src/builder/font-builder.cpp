@@ -27,7 +27,7 @@ struct TmpGlyphInfo
 	int w, h;
 	int bearingX, bearingY;
 	int advance;
-	char *data;
+	unsigned char *data;
 };
 
 namespace {
@@ -129,7 +129,7 @@ struct fontbuilder : putki::builder::handler_i
 				FT_Bitmap *bmp = &face->glyph->bitmap;
 
 				TmpGlyphInfo g;
-				g.data = new char[bmp->width * bmp->rows];
+				g.data = new unsigned char[bmp->width * bmp->rows];
 				g.w = bmp->width;
 				g.h = bmp->rows;
 				g.bearingX = face->glyph->metrics.horiBearingX;
@@ -327,7 +327,7 @@ struct fontbuilder : putki::builder::handler_i
 					for (int h=0;h<pd->pixelHeight;h++)
 					{
 						int ofs = h * pd->pixelWidth;
-						row *r = row_cache_add(&cache, (char*) &pd->pixelData[ofs], pd->pixelWidth);
+						row *r = row_cache_add(&cache, &pd->pixelData[ofs], pd->pixelWidth);
 						if (r && (r->comp_data_begin + r->comp_data_size) > font->RLEData.size())
 							RECORD_ERROR(record, "Internal build error in glyph cache, row_cache_add returned bad on known glyph row.")
 

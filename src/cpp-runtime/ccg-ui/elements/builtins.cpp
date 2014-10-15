@@ -70,7 +70,7 @@ namespace ccgui
 				fnt = button->Style->FontStyle->Font;
 				if (!data->label_layout)
 				{
-					data->label_layout = uifont::layout_make(fnt, button->Text, rinfo->layout_scale * button->Style->FontStyle->PixelSize, -1, rinfo->render_scaling_hint);
+					data->label_layout = uifont::layout_make(fnt, rinfo->glyph_cache, button->Text, rinfo->layout_scale * button->Style->FontStyle->PixelSize, -1, rinfo->render_scaling_hint);
 				}
 			}
 
@@ -117,7 +117,7 @@ namespace ccgui
 		if (!text->font)
 			return;
 		
-		uifont::layout_data *ld = uifont::layout_make(text->font, text->Text, text->pixelSize * rinfo->layout_scale, -1, rinfo->render_scaling_hint);
+		uifont::layout_data *ld = uifont::layout_make(text->font, rinfo->glyph_cache, text->Text, text->pixelSize * rinfo->layout_scale, -1, rinfo->render_scaling_hint);
 		if (ld)
 		{
 			uifont::layout_draw(rinfo->stream, ld, layout->x0, layout->y0, col2int(text->color));

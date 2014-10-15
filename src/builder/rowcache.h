@@ -5,7 +5,7 @@ struct row
 {
 	unsigned int totlen;
 	unsigned char start;
-	std::vector<char> data;
+	std::vector<unsigned char> data;
 	unsigned int uses;
 	unsigned int comp_data_begin, comp_data_size;
 };
@@ -18,11 +18,11 @@ struct row_length
 typedef std::map<unsigned int, row_length> row_cache;
 
 // might cut a bit or two of precision here and there.
-int lossy_rle_encode(std::vector<char> const & input, unsigned char *output)
+int lossy_rle_encode(std::vector<unsigned char> const & input, unsigned char *output)
 {
 	int outsize = 0;
 	int runlength = 1;
-	int old_val = (unsigned char)input[0];
+	int old_val = input[0];
 
 	for (int i=1;i<=input.size();i++)
 	{
@@ -42,7 +42,7 @@ int lossy_rle_encode(std::vector<char> const & input, unsigned char *output)
 			{
 				if (old_val == 255)
 					old_val = 254;
-				output[outsize++] = (unsigned char)(old_val / 2);
+				output[outsize++] = (old_val / 2);
 			}
 
 			// encode new
@@ -163,7 +163,7 @@ void row_cache_print(row_cache *cache)
 	std::cout << "Raw image data is " << uncomp_bytes << " bytes, rle compressed is " << comp_bytes << std::endl;
 }
 
-row* row_cache_add(row_cache *cache, char *data, int length)
+row* row_cache_add(row_cache *cache, unsigned char *data, int length)
 {
 	// figure out start
 	int start = 0, end = length - 1;

@@ -10,13 +10,18 @@ namespace ccgui
 {
 	struct element_handler_set;
 
+	namespace glyphcache
+	{
+		struct data;
+	}
+
 	namespace uiscreen
 	{
 		struct instance;
 
 		struct resolved_texture
 		{
-			kosmos::render::loaded_texture *texture;
+			kosmos::render::texture_ref *texture;
 			float u0, v0, u1, v1;
 		};
 
@@ -25,6 +30,7 @@ namespace ccgui
 			ccgui::uiscreen::instance *screen;
 			ccgui::uicontext *context;
 			kosmos::render2d::stream *stream;
+			glyphcache::data *glyph_cache;
 			element_handler_set *handlers;
 			float layout_scale;
 			float layout_offset_x, layout_offset_y;
@@ -32,7 +38,7 @@ namespace ccgui
 		};
 
 		instance * create(outki::UIScreen *screen, element_handler_set *handlers);
-		void draw(instance *d, kosmos::render2d::stream *stream, uicontext *context, float x0, float y0, float x1, float y1);
+		void draw(instance *d, kosmos::render2d::stream *stream, glyphcache::data *cache, uicontext *context, float x0, float y0, float x1, float y1);
 		void free(instance *r);
 
 		bool resolve_texture(instance *d, outki::Texture *texture, resolved_texture * out_resolved, float u0, float v0, float u1, float v1);

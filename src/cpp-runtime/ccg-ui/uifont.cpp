@@ -12,7 +12,9 @@
 #include <kosmos/render/render2d.h>
 
 #include <vector>
+#include <math.h>
 
+#include "glyphcache.h"
 
 namespace ccgui
 {
@@ -48,11 +50,11 @@ namespace ccgui
 				}
 
 				while (pos < width)
-					output[pos++] = 0x0;
+					output[pos++] = 0;
 			}
 		}
 
-		layout_data *layout_make(outki::Font *font, const char *text, float pixel_size, int max_width, float rendering_scale_hint)
+		layout_data *layout_make(outki::Font *font, glyphcache::data *cache, const char *text, float pixel_size, int max_width, float rendering_scale_hint)
 		{
 			if (!text || !text[0])
 				return 0;
@@ -88,6 +90,13 @@ namespace ccgui
 				}
 			}
 
+			const bool pixel_snap = (pixel_size < 16);
+
+			if (pixel_snap)
+			{
+				scaling = 1.0f;
+			}
+
 			if (best_index < 0)
 			{
 				layout_data *layout = new layout_data();
@@ -100,6 +109,7 @@ namespace ccgui
 			const int MAX_GLYPHS = 4096;
 			bool word_break[MAX_GLYPHS];
 			int glyph_id[MAX_GLYPHS];
+
 			int glyphs = 0;
 
 			// utf8 decode
@@ -131,36 +141,48 @@ namespace ccgui
 
 			// lookup and translate, might output less glyphs than allocated
 			// if the font does not contain all.
+
+			const outki::FontGlyphPixData *glyphData[MAX_GLYPHS];
+
 			layout->glyphs_size = 0;
 			for (int i=0;i!=glyphs;i++)
 			{
-				// Try
-				const outki::FontGlyphPixData *pd = 0;
+				layout_glyph *l = &layout->glyphs[layout->glyphs_size];
+				bool gotit = false;
+
 				for (int j=0;j!=fontdata->PixGlyphs_size;j++)
 				{
 					const outki::FontGlyphPixData *pg = &fontdata->PixGlyphs[j];
+					glyphData[layout->glyphs_size] = pg;
+
 					if (pg->glyph == glyph_id[i])
 					{
-						unsigned char tmpBuf[65536];
-						for (int h=0;h<pg->pixelHeight;h++)
+						void *handle = (void*) pg;
+						if (!glyphcache::get(cache, handle, l->u, l->v, &l->tex))
 						{
-							unpack_rle_row(font->RLEData + pg->rleDataBegin[h], pg->rleDataLength[h], &tmpBuf[h * pg->pixelWidth], pg->pixelWidth);
+							unsigned char uncomp[65536];
+							memset(uncomp, 0x00, sizeof(uncomp));
+							for (int h=0;h<pg->pixelHeight;h++)
+								unpack_rle_row(font->RLEData + pg->rleDataBegin[h], pg->rleDataLength[h], &uncomp[h * pg->pixelWidth], pg->pixelWidth);
+
+							// insert and retry.
+							glyphcache::insert(cache, handle, uncomp, pg->pixelWidth, pg->pixelHeight);
+
+							//
+							gotit = glyphcache::get(cache, handle, l->u, l->v, &l->tex);
 						}
+						else
+						{
+							gotit = true;
+						}
+
+						break;
 					}
 				}
 
-				const outki::FontGlyph *gldata = 0;
-				for (int j=0;j!=fontdata->Glyphs_size;j++)
+				if (gotit)
 				{
-					if (fontdata->Glyphs[j].glyph == glyph_id[i])
-					{
-						const int pos = layout->glyphs_size++;
-
-						// store the re-mapped glyph id in the array
-						glyph_id[pos] = j;
-						layout->glyphs[pos].glyph = gldata;
-						break;
-					}
+					layout->glyphs_size++;
 				}
 			}
 
@@ -182,7 +204,7 @@ namespace ccgui
 
 			for (int i=0;i!=layout->glyphs_size;i++)
 			{
-				const outki::FontGlyph *glyph = &fontdata->Glyphs[glyph_id[i]];
+				const outki::FontGlyphPixData *glyph = glyphData[i];
 				layout_glyph *current = &layout->glyphs[i];
 
 				if (pen > 0)
@@ -200,24 +222,21 @@ namespace ccgui
 					}
 				}
 
-				const int x = (float)(scaling * ((pen + glyph->bearingX) / 64.0f));
-				const int y = (float)(scaling * (((y_ofs + glyph->bearingY) >> 6)));
+				float x = (float)(scaling * ((pen + glyph->bearingX) / 64.0f));
+				float y = (float)(scaling * (((y_ofs + glyph->bearingY) >> 6)));
 				const int w = (float)(scaling * glyph->pixelWidth);
 				const int h = (float)(scaling * glyph->pixelHeight);
+
+				if (pixel_snap)
+				{
+					x = (int)x;
+					y = (int)y;
+				}
 
 				current->x0 = x;
 				current->y0 = y;
 				current->x1 = x + w;
 				current->y1 = y + h;
-				current->glyph = glyph;
-
-				if (actual_pixel_size < 20.0f && false)
-				{
-					current->x0 = ((int)(current->x0 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
-					current->y0 = ((int)(current->y0 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
-					current->x1 = ((int)(current->x1 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
-					current->y1 = ((int)(current->y1 * rendering_scale_hint + 0.5f)) / rendering_scale_hint;
-				}
 
 				if (!i || current->x1 > layout->maxx) layout->maxx = current->x1;
 				if (!i || current->y1 > layout->maxy) layout->maxy = current->y1;
@@ -252,33 +271,41 @@ namespace ccgui
 				}
 			}
 
+			layout->pixel_snapped = pixel_snap;
 			return layout;
 		}
 
 		void layout_draw(kosmos::render2d::stream *stream, layout_data *layout, float x, float y, unsigned long color)
 		{
-			kosmos::render::loaded_texture *tex = kosmos::render::load_texture(layout->fontdata->OutputTexture);
+			if (layout->pixel_snapped)
+			{
+				x = floorf(x);
+				y = floorf(y);
+			}
+
 			for (int i=0;i<layout->glyphs_size;i++)
 			{
 				layout_glyph *cur = &layout->glyphs[i];
-				if (!cur->glyph)
+				if (!cur->tex)
 					continue;
-					
-				const outki::FontGlyph *glyph = cur->glyph;
 
-				kosmos::render2d::tex_rect(stream, tex,
+/*				if (i == 0)
+				{
+					kosmos::render2d::tex_rect(stream, cur->tex, 0, 0, 256, 256, 0, 0, 1 ,1, color);
+				}
+*/
+				kosmos::render2d::tex_rect(stream, cur->tex,
 					x + cur->x0,
 					y + cur->y0,
 					x + cur->x1,
 					y + cur->y1,
-					glyph->u0,
-					glyph->v0,
-					glyph->u1,
-					glyph->v1,
-					color
+					cur->u[0],
+					cur->v[0],
+				       cur->u[1],
+					cur->v[1],
+				       color
 				);
 			}
-			kosmos::render::unload_texture(tex);
 		}
 
 		void layout_draw_align(kosmos::render2d::stream *stream, layout_data *layout, float x0, float y0, float x1, float y1, int v, int h, unsigned long color)

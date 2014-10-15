@@ -20,22 +20,22 @@ typedef std::map<unsigned int, row_length> row_cache;
 // might cut a bit or two of precision here and there.
 int lossy_rle_encode(std::vector<char> const & input, unsigned char *output)
 {
-	int runlength = 0;
-	int old_val;
 	int outsize = 0;
+	int runlength = 1;
+	int old_val = (unsigned char)input[0];
 
-	for (int i=0;i<=input.size();i++)
+	for (int i=1;i<=input.size();i++)
 	{
 		unsigned int next = 257; // impossible value
 		if (i < input.size())
 		    next = (unsigned char)input[i];
 
-		if (!i || next != old_val || runlength > 126)
+		if (next != old_val || runlength > 126)
 		{
 			// output old run
 			if (runlength > 1)
 			{
-				output[outsize++] = 0x80 | runlength;
+				output[outsize++] = 0x80 | (runlength - 1);
 				output[outsize++] = old_val;
 			}
 			else if (runlength == 1)
@@ -68,7 +68,6 @@ void row_cache_compress(row_cache *cache, std::vector<unsigned char> *out)
 		for (int j=0;j!=i->second.rows.size();j++)
 		{
 			row & r = i->second.rows[j];
-
 			unsigned char encoded[2048];
 			r.comp_data_begin = out->size();
 			r.comp_data_size = lossy_rle_encode(r.data, &encoded[0]);
@@ -96,8 +95,7 @@ row* row_cache_insert(row_cache *cache, row *rd)
 					err += diff * diff;
 				}
 
-				int qualityTweak = 0;
-				if (err > cand.data.size()*qualityTweak)
+				if (err > 100)
 					continue;
 
 				cand.uses++;

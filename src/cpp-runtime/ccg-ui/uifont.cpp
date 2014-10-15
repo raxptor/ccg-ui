@@ -18,6 +18,40 @@ namespace ccgui
 {
 	namespace uifont
 	{
+		namespace
+		{
+			void unpack_rle_row(unsigned char *rleBuf, unsigned int size, unsigned char *output, unsigned int width)
+			{
+				int pos = 0;
+				unsigned char *input = rleBuf;
+				unsigned char *end = rleBuf + size;
+				while (input < end)
+				{
+					if (input[0] & 0x80)
+					{
+						int count = ((*input++) & 0x7f) + 1;
+						unsigned char value = (*input++);
+						for (int j=0;j<count;j++)
+							output[pos++] = value;
+					}
+					else
+					{
+						unsigned char res = (*input++) * 2;
+						if (res == 254) res = 255;
+						output[pos++] = res;
+					}
+				}
+
+				if (pos > width)
+				{
+					KOSMOS_ERROR("unpack_rle_row unpacked too much! " << pos << " but expected " << width)
+				}
+
+				while (pos < width)
+					output[pos++] = 0x0;
+			}
+		}
+
 		layout_data *layout_make(outki::Font *font, const char *text, float pixel_size, int max_width, float rendering_scale_hint)
 		{
 			if (!text || !text[0])
@@ -100,8 +134,22 @@ namespace ccgui
 			layout->glyphs_size = 0;
 			for (int i=0;i!=glyphs;i++)
 			{
-				const outki::FontGlyph *gldata = 0;
+				// Try
+				const outki::FontGlyphPixData *pd = 0;
+				for (int j=0;j!=fontdata->PixGlyphs_size;j++)
+				{
+					const outki::FontGlyphPixData *pg = &fontdata->PixGlyphs[j];
+					if (pg->glyph == glyph_id[i])
+					{
+						unsigned char tmpBuf[65536];
+						for (int h=0;h<pg->pixelHeight;h++)
+						{
+							unpack_rle_row(font->RLEData + pg->rleDataBegin[h], pg->rleDataLength[h], &tmpBuf[h * pg->pixelWidth], pg->pixelWidth);
+						}
+					}
+				}
 
+				const outki::FontGlyph *gldata = 0;
 				for (int j=0;j!=fontdata->Glyphs_size;j++)
 				{
 					if (fontdata->Glyphs[j].glyph == glyph_id[i])

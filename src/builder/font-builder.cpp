@@ -257,6 +257,12 @@ struct fontbuilder : putki::builder::handler_i
 
 				if (font->OutputPixelData)
 				{
+					if (g.w > 255 || g.h > 255)
+					{
+						RECORD_WARNING(record, "Ignoring glyph with dimensions " << g.w << "x" << g.h << " because u8 is used for size in output");
+						continue;
+					}
+
 					// These do not have any u/v data, only the pixel data itself for run-time atlas generation/rendering.
 					inki::FontGlyphPixData pd;
 					pd.glyph = font->Characters[packedRects[k].id];

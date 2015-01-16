@@ -264,7 +264,7 @@ public class UIRenderer
 		GL.Vertex3(x0, y1, 0);
 	}	
 
-	public static void Begin(int width = -1, int height = -1)
+	public static void Begin()
 	{
 		if (SolidMaterial == null && SolidShader != null)
 		{
@@ -272,11 +272,7 @@ public class UIRenderer
 		}
 		
 		m_currentColor.r = m_currentColor.g = m_currentColor.b = m_currentColor.a = 1.0f;
-
-		if (width == -1)
-			GL.LoadPixelMatrix(0, Screen.width, Screen.height, 0);
-		else
-			GL.LoadPixelMatrix(0, width, height, 0);
+		GL.LoadPixelMatrix(0, Screen.width, Screen.height, 0);
 	}
 	
 	public static void End()

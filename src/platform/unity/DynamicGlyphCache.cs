@@ -23,7 +23,7 @@ public class DynamicGlyphCache
 	
 	}
 	
-	public Entry GetGlyph(string glyphId, outki.FontGlyphPixData pixData, bool allowAlloc = true)
+	public Entry GetGlyph(string glyphId, outki.Font font, outki.FontGlyphPixData pixData, bool allowAlloc = true)
 	{
 		if (m_entries.ContainsKey(glyphId))
 			return m_entries[glyphId];
@@ -34,14 +34,40 @@ public class DynamicGlyphCache
 			if (m_atlases[i].atlas.Alloc(pixData.pixelWidth, pixData.pixelHeight, out r))
 			{
 				Color[] col = new Color[pixData.pixelWidth * pixData.pixelHeight];
-				for (int j=0;j<pixData.pixelData.Length;j++)
+				int[] val = new int[pixData.pixelWidth];
+				for (int y=0;y<pixData.pixelHeight;y++)
 				{
-					col[j].a = (float)pixData.pixelData[j] / 255.0f;
-					col[j].r = 255.0f;
-					col[j].g = 255.0f;
-					col[j].b = 255.0f;
+					int rle0 = pixData.rleDataBegin[y];
+					int rle1 = rle0 + pixData.rleDataLength[y];
+					int opos = 0;
+					for (int j=rle0;j!=rle1;j++)
+					{
+						if ((font.RLEData[j] & 0x80) == 0x80)
+						{
+							int count = font.RLEData[j++] & 0x7f;
+							byte value = font.RLEData[j];
+							for (int b=0;b!=count;b++)
+								val[opos++] = value;
+						}
+						else
+						{
+							int b = font.RLEData[j] * 2;
+							if (b == 254)
+								b = 255;
+							val[opos++] = b;
+						}
+					}
+					
+					for (int x=0;x<pixData.pixelWidth;x++)
+					{
+						int idx = y * pixData.pixelWidth + x;
+						col[idx].a = (float)val[x] / 255.0f;
+						col[idx].r = 255.0f;
+						col[idx].g = 255.0f;
+						col[idx].b = 255.0f;
+					}
 				}
-				
+								
 				m_atlases[i].atlas.SetPixels(r, col);
 				Entry e = new Entry();
 				e.rect = r;
@@ -56,7 +82,7 @@ public class DynamicGlyphCache
 			Cache c = new Cache();
 			c.atlas = new DynamicAtlas(512, 512);
 			m_atlases.Add(c);
-			return GetGlyph(glyphId, pixData, false);
+			return GetGlyph(glyphId, font, pixData, false);
 		}
 		
 		return null;

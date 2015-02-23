@@ -65,4 +65,5 @@ Font [in, out]
 	[no-out] ptr TextureConfiguration TextureConfiguration
 	[hidden] FontOutput[] Outputs
 	[hidden] byte[] RLEData
+	int OutlineWidth
 }

@@ -57,14 +57,14 @@ namespace CCGUI
 			switch (UIElementLogic.GetButtonVisualState(rctx.InputManager, this, m_touchInteraction))
 			{
 				case UIElementLogic.ButtonVisualStates.NORMAL:
-					UIRenderer.SetColor(new UIRenderer.RColor(1,1,1,0.5f));	
+					UIRenderer.SetColor(new UIRenderer.RColor(1,1,1,1));
 					if (m_f0 != null)
 						m_f0.Draw(rctx, layout.x0, layout.y0, layout.x1, layout.y1);
 					if (m_normal != null)
 						UIRenderer.DrawTexture(m_normal, layout.x0, layout.y0, layout.x1, layout.y1);
 					break;
 				case UIElementLogic.ButtonVisualStates.MOUSEOVER:
-					UIRenderer.SetColor(new UIRenderer.RColor(1,1,1,0.7f));
+					UIRenderer.SetColor(new UIRenderer.RColor(1,1,1,1));
 					if (m_f1 != null)
 						m_f1.Draw(rctx, layout.x0, layout.y0, layout.x1, layout.y1);
 					if (m_normal != null)

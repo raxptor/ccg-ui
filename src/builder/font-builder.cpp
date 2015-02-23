@@ -31,7 +31,50 @@ struct TmpGlyphInfo
 };
 
 namespace {
-	const char *builder_version = "font-builder-debug-3";
+	const char *builder_version = "font-builder-3b";
+	
+	void make_outline(unsigned int *dest, unsigned int *source, int width, int height)
+	{
+		//
+		for (int y=0;y<height;y++)
+		{
+			for (int x=0;x<width;x++)
+			{
+				int max = 0;
+				for (int v=-1;v<2;v++)
+				{
+					const unsigned int Y = y + v;
+					if (!(Y < height))
+						continue;
+					for (int u=-1;u<2;u++)
+					{
+						static const int mul[9] = {180,256,180,256,256,256,180,256,180};
+						const unsigned int X = x + u;
+						if (!(X < width))
+							continue;
+						unsigned int val = source[Y * width + X] >> 24;
+						val = (val * mul[(1+v)*3+(1+u)]) >> 8;
+						if (val > max)
+							max = val;
+					}	
+				}
+				dest[y*width+x] = max << 24;
+			}
+		}
+	}
+	
+	void blend_outline(unsigned int *dest, unsigned int *outline, unsigned int *original, int width, int height)
+	{
+		for (int y=0;y<height;y++)
+		{
+			for (int x=0;x<width;x++)
+			{
+				unsigned int idx = y * width + x;
+				unsigned int white = (original[idx] >> 24) & 0xff; 
+				dest[idx] = (outline[idx] & 0xff000000) | (white * 0x10101);
+			}
+		}
+	}
 }
 
 struct fontbuilder : putki::builder::handler_i
@@ -109,7 +152,7 @@ struct fontbuilder : putki::builder::handler_i
 			up.BBoxMinY = 1000000;
 			up.BBoxMaxY = -100000;
 
-			int border = 2;
+			int border = 2 + font->OutlineWidth;
 
 			for (unsigned int i=0;i<font->Characters.size();i++)
 			{
@@ -216,7 +259,6 @@ struct fontbuilder : putki::builder::handler_i
 				{
 					for (int x=0;x<out_width;x++)
 					{
-						//outBmp[y*out_width+x] = (x^y) & 1 ? 0xff101010 : 0xff808080;
 						outBmp[y*out_width+x] = 0x0;
 					}
 				}
@@ -232,14 +274,17 @@ struct fontbuilder : putki::builder::handler_i
 				{
 					inki::FontGlyph fg;
 					fg.glyph = font->Characters[packedRects[k].id];
-					fg.u0 = float(out.x + border) / float(out_width);
-					fg.v0 = float(out.y + border) / float(out_height);
-					fg.u1 = float(out.x + border + g.w) / float(out_width);
-					fg.v1 = float(out.y + border + g.h) / float(out_height);
-					fg.pixelWidth = g.w;
-					fg.pixelHeight = g.h;
-					fg.bearingX = g.bearingX;
-					fg.bearingY = - g.bearingY;
+					
+					int outline = font->OutlineWidth;
+					
+					fg.u0 = float(out.x + border - outline) / float(out_width);
+					fg.v0 = float(out.y + border - outline) / float(out_height);
+					fg.u1 = float(out.x + border + g.w + outline) / float(out_width);
+					fg.v1 = float(out.y + border + g.h + outline) / float(out_height);
+					fg.pixelWidth = g.w + 2 * outline;
+					fg.pixelHeight = g.h + 2 * outline;
+					fg.bearingX = g.bearingX - outline * 64;
+					fg.bearingY = - g.bearingY - outline * 64;
 					fg.advance = g.advance;
 					up.Glyphs.push_back(fg);
 
@@ -291,6 +336,23 @@ struct fontbuilder : putki::builder::handler_i
 			{
 				std::stringstream ss;
 				ss << path << "_i" << sz << "_px" << font->PixelSizes[sz] << "_glyphs";
+				
+				if (font->OutlineWidth > 0)
+				{
+					unsigned int *temp = new unsigned int[out_width * out_height];
+					unsigned int *outline = new unsigned int[out_width * out_height];
+					
+					memcpy(outline, outBmp, out_width * out_height * 4);
+					for (int i=0;i<font->OutlineWidth;i++)
+					{
+						make_outline(temp, outline, out_width, out_height);
+						memcpy(outline, temp, out_width * out_height * 4);
+					}
+					
+					blend_outline(outBmp, outline, outBmp, out_width, out_height);
+					delete [] temp;
+					delete [] outline;
+				}
 
 				std::string outpath = ss.str();
 				std::string output_atlas_path = ss.str() + ".png";

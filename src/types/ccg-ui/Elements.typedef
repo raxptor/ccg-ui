@@ -144,6 +144,7 @@ UITextElement : UIElement [in, out]
 
 	ptr UIFill BackgroundFill
 	bool AdjustFill
+	bool WordWrap
 }
 
 UIButtonElement : UIElement [in, out]

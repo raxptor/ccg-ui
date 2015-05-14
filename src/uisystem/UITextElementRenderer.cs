@@ -15,7 +15,11 @@ namespace CCGUI
 
 		public void OnLayout(UIRenderContext rctx, ref UIElementLayout elementLayout)
 		{
-			m_fmted = m_font.FormatText(rctx, m_element.Text, m_element.pixelSize);
+			float wrapLength = 0;
+			if (m_element.WordWrap)
+				wrapLength = elementLayout.x1 - elementLayout.x0;
+		
+			m_fmted = m_font.FormatText(rctx, m_element.Text, m_element.pixelSize, wrapLength);
 			if (m_fmted == null)
 				return;
 

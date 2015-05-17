@@ -16,6 +16,27 @@ public class UITusch
 	}
 	
 	static bool m_mouseWasDown;
+	static Tch[] m_mouseEmu = new Tch[0];
+	
+	public static void UpdateMouseEmu()
+	{
+		if (Input.GetMouseButton(0))
+		{
+			Tch t = new Tch();
+			t.position.x = Input.mousePosition.x;
+			t.position.y = Screen.height - Input.mousePosition.y;
+			t.phase = !m_mouseWasDown ? TouchPhase.Began : TouchPhase.Moved;
+			t.fingerId = 1;
+			m_mouseEmu = new Tch[1];
+			m_mouseEmu[0] = t;
+			m_mouseWasDown = true;
+		}
+		else
+		{
+			m_mouseWasDown = false;
+			m_mouseEmu = new Tch[0];
+		}
+	}
 	
 	static public Tch[] Read()
 	{
@@ -33,23 +54,7 @@ public class UITusch
 			return n;
 		}
 
-		if (Input.GetMouseButton(0))
-		{
-			Tch t = new Tch();
-			t.position.x = Input.mousePosition.x;
-			t.position.y = Screen.height - Input.mousePosition.y;
-			t.phase = !m_mouseWasDown ? TouchPhase.Began : TouchPhase.Moved;
-			t.fingerId = 1;
-			Tch[] u = new Tch[1];
-			u[0] = t;
-			m_mouseWasDown = true;
-			return u;
-		}
-		else
-		{
-			m_mouseWasDown = false;
-			return new Tch[0];
-		}
+		return m_mouseEmu;
 	}
 }
 

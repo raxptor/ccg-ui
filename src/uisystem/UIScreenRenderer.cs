@@ -8,6 +8,10 @@ namespace CCGUI
 		{
 			// null
 		}
+		public bool PollEvent(string what)
+		{
+			return false;
+		}
 	}
 		
 	public class UIScreenRenderer

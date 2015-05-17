@@ -20,7 +20,7 @@ namespace CCGUI
 		
 		public bool StillInside;
 		public int PressedByTouchId;
-		public UnityEngine.Vector3 PressedLocation;
+		public UnityEngine.Vector3 PressedLocation, CurrentLocation;
 	}
 
 	public class UIInputState
@@ -96,15 +96,25 @@ namespace CCGUI
 				{
 					if (t.position.x >= x0 && t.position.y >= y0 && t.position.x < x1 && t.position.y < y1)
 					{
-						if (interaction.PressedByTouchId == -1)
-							interaction.PressedLocation = t.position;
-	
-						interaction.PressedByTouchId = t.fingerId;
-						interaction.StillInside = true;
+						if (t.phase == UnityEngine.TouchPhase.Began)
+						{
+							if (interaction.PressedByTouchId == -1)
+							{
+								interaction.PressedLocation = t.position;
+								interaction.PressedByTouchId = t.fingerId;
+							}
+						}
+						
+						if (interaction.PressedByTouchId == t.fingerId)
+						{
+							interaction.CurrentLocation = t.position;
+							interaction.StillInside = true;
+						}
 						return;
 					}
 					else if (t.fingerId == interaction.PressedByTouchId)
 					{
+						interaction.CurrentLocation = t.position;
 						interaction.StillInside = false;
 						return;
 					}

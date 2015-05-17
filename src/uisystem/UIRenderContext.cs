@@ -1,9 +1,12 @@
+using System.Collections.Generic;
+
 namespace CCGUI
 {
 	public interface EventHandler
 	{
-		void OnEvent(string name);
-	}
+		void OnEvent(string what);
+		bool PollEvent(string what);
+	}	
 	
 	public class UIRenderContext
 	{

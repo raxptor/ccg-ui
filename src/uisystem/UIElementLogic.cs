@@ -38,7 +38,11 @@ namespace CCGUI
 					im.m_mouseInteraction.ObjectPressed = null;
 					
 					if (im.m_mouseInteraction.ObjectOver == obj)
+					{
+						// Triggering press, so dont do it doubly.
+						ti.PressedByTouchId = -1;
 						return true;
+					}
 				}
 			}
 			
@@ -47,7 +51,12 @@ namespace CCGUI
 				bool pr = (ti.PressedByTouchId != -1) && ti.StillInside;
 				im.TouchHitTest(x0, y0, x1, y1, ref ti);
 				if (ti.PressedByTouchId == -1 && pr)
+				{
+					//reset if needed
+					if (im.m_mouseInteraction.ObjectPressed == obj)
+						im.m_mouseInteraction.ObjectPressed = null;
 					return true;
+				}
 			}
 			
 			return false;

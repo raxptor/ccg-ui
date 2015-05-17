@@ -41,8 +41,10 @@ namespace CCGUI
 										return new UIFillElementRenderer((outki.UIFillElement)element);
 								case outki.UIButtonElement.TYPE:
 										return new UIButtonElementRenderer((outki.UIButtonElement)element);
+								case outki.UISliderElement.TYPE:
+									return new UISliderElementRenderer((outki.UISliderElement)element);
 								default:
-										return new UIDoNothingRenderer();
+									return new UIDoNothingRenderer();
 						}
 				}
 		}

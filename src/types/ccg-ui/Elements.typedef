@@ -157,4 +157,8 @@ UIButtonElement : UIElement [in, out]
 	string Event
 }
 
-
+UISliderElement : UIElement
+{
+	ptr UIFill BackgroundFill
+	ptr Texture Knob
+}

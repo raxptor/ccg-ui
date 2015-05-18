@@ -50,19 +50,19 @@
 			float displayVal = m_value;
 			
 			UIInputManager im = rctx.InputManager;
-			float dragX = m_dragStartX, dragY = m_dragStartY;
+			float dragX = 0, dragY = 0;
 			
 			if (!m_dragMouse)
 			{
 				bool pr = (m_ti.PressedByTouchId != -1);
-				im.TouchHitTest(x0, y0, x1, y1, ref m_ti);
+				im.TouchHitTest(x - 0.70f * h_width, y - 0.70f * h_height, x + 0.70f * h_width, y + 0.70f * h_height, ref m_ti);
 				if (!pr && m_ti.PressedByTouchId != -1)
 				{
 					// touched.
 					m_dragTouch = true;
 					m_preDragValue = m_value;
 				}
-				else if (m_ti.PressedByTouchId == -1 && pr)
+				else if (m_ti.PressedByTouchId == -1)
 				{
 					m_dragTouch = false;
 				}
@@ -73,6 +73,7 @@
 				}
 			}
 			
+			/*
 			if (!m_dragTouch)
 			{
 				if (!im.m_state.MouseDown)
@@ -90,6 +91,7 @@
 						im.m_mouseInteraction.ObjectPressed = this;
 						m_dragStartX = im.m_state.MouseX;
 						m_dragStartY = im.m_state.MouseY;
+						m_preDragValue = m_value;
 						m_dragMouse = true;
 					}
 				}
@@ -106,6 +108,7 @@
 					}
 				}
 			}
+			*/
 			
 			if (m_dragMouse || m_dragTouch)
 			{
@@ -113,7 +116,6 @@
 				float h = (layout.y1-layout.y0);
 				float deltaDot = dragX * w + dragY * h;
 				float delta = deltaDot / (w*w + h*h);
-				UnityEngine.Debug.Log("dm=" + m_dragMouse + " dt=" + m_dragTouch + " " + deltaDot + " " + delta + " " + m_value);
 				m_value = m_preDragValue + delta;
 				if (m_value < 0.0f)
 					m_value = 0.0f;

@@ -94,6 +94,10 @@ namespace CCGUI
 			{
 				foreach (UITusch.Tch t in m_state.Touches)
 				{
+					// if the touch we track appear again, reset everything...
+					if (t.phase == UnityEngine.TouchPhase.Began && interaction.PressedByTouchId == t.fingerId)
+						interaction.PressedByTouchId = -1;
+						
 					if (t.position.x >= x0 && t.position.y >= y0 && t.position.x < x1 && t.position.y < y1)
 					{
 						if (t.phase == UnityEngine.TouchPhase.Began)

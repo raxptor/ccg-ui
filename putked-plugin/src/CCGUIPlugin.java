@@ -1,6 +1,5 @@
 import javafx.scene.Node;
 import javafx.scene.control.ColorPicker;
-import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.paint.Color;
@@ -19,15 +18,8 @@ class ColorEditor implements putked.FieldEditor
         m_field = f;
 	}
 	
-	private double b2(byte b) {
-		if (b < 0)
-			return (256 + b) / 255.0f;
-		else 
-			return b / 255.0f;
-	}
-	
-	private byte d2b(double b) {
-		return (byte)((int)(b*255));
+	private long d2b(double b) {
+		return (long)(b/255.0f);
 	}
 
 	@Override
@@ -36,9 +28,9 @@ class ColorEditor implements putked.FieldEditor
         hb.setMaxWidth(Double.MAX_VALUE);
         
         ColorPicker ed = new ColorPicker();
-        ed.setValue(new Color(b2(m_color.get_r()), b2(m_color.get_g()), b2(m_color.get_b()), b2(m_color.get_a())));
+        ed.setValue(new Color(m_color.get_r()/255.0f, m_color.get_g()/255.0f, m_color.get_b()/255.0f, m_color.get_a()/255.0f));
         ed.valueProperty().addListener( (a, prev, next) -> {
-        	m_color.set_r(d2b(next.getRed()));
+        	m_color.set_r(d2b(next.getRed()));;
         	m_color.set_g(d2b(next.getGreen()));
         	m_color.set_b(d2b(next.getBlue()));
         	m_color.set_a(d2b(next.getOpacity()));
@@ -63,7 +55,7 @@ class FieldCreator implements putked.FieldEditorCreator
 		if (asArray) {
 			return null;
 		}
-		if (field.getType() == 5 && field.getRefType().equals(CCGUI.UIColor.NAME)) {
+		if (field.getType() == Interop.FT_STRUCT_INSTANCE && field.getRefType().equals(CCGUI.UIColor.NAME)) {
 			field.setArrayIndex(index);
             MemInstance _mi = field.getStructInstance(mi);
             CCGUI.UIColor color = new CCGUI.UIColor();

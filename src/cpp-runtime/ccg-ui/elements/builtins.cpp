@@ -66,6 +66,8 @@ namespace ccgui
 			if (button->Style->FontStyle && button->Style->FontStyle->Font)
 			{
 				updated |= LIVE_UPDATE(&button->Style->FontStyle);
+				updated |= LIVE_UPDATE(&button->Style->FontStyle->Font);
+				
 				if (updated && data->label_layout)
 				{
 					uifont::layout_free(data->label_layout);
@@ -125,7 +127,9 @@ namespace ccgui
 		uifont::layout_data *ld = uifont::layout_make(text->font, rinfo->glyph_cache, text->Text, text->pixelSize * rinfo->layout_scale, -1, rinfo->render_scaling_hint);
 		if (ld)
 		{
-			uifont::layout_draw(rinfo->stream, ld, layout->x0, layout->y0, col2int(text->color));
+			uifont::layout_draw_align(rinfo->stream, ld, layout->x0, layout->y0, layout->x1, layout->y1, 
+			                          text->VerticalAlignment, text->HorizontalAlignment, col2int(text->color));
+
 			uifont::layout_free(ld);
 		}
 	}

@@ -60,12 +60,17 @@ namespace ccgui
 
 		if (button->Style)
 		{
-			LIVE_UPDATE(&button->Style);
+			bool updated = LIVE_UPDATE(&button->Style);
 
 			outki::Font *fnt = 0;
 			if (button->Style->FontStyle && button->Style->FontStyle->Font)
 			{
-				LIVE_UPDATE(&button->Style->FontStyle);
+				updated |= LIVE_UPDATE(&button->Style->FontStyle);
+				if (updated && data->label_layout)
+				{
+					uifont::layout_free(data->label_layout);
+					data->label_layout = 0;
+				}
 
 				fnt = button->Style->FontStyle->Font;
 				if (!data->label_layout)

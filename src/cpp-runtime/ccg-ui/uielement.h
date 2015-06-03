@@ -95,6 +95,6 @@ namespace ccgui
 	
 	inline unsigned int col2int(outki::UIColor const & col)
 	{
-		return (col.a << 24) | (col.r << 16) | (col.g << 8) | col.b;
+		return (col.a << 24) | (col.b << 16) | (col.g << 8) | col.r;
 	}
 }

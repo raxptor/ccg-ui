@@ -47,31 +47,31 @@ namespace ccgui
 
 	namespace uielement
 	{
-		void draw_fill(uiscreen::renderinfo *rinfo, float x0, float y0, float x1, float y1, outki::UIFill *fill)
+		void draw_fill(uiscreen::renderinfo *rinfo, float x0, float y0, float x1, float y1, outki::ui_fill *fill)
 		{
 			LIVE_UPDATE(&fill);
 
-			if (outki::UIGradientFill *g = fill->exact_cast<outki::UIGradientFill>())
+			if (outki::ui_gradient_fill *g = fill->exact_cast<outki::ui_gradient_fill>())
 			{
 				kosmos::render2d::gradient_rect(rinfo->stream, x0, y0, x1, y1, col2int(g->topleft),
 				                              col2int(g->topright), col2int(g->bottomleft), col2int(g->bottomright));
 			}
-			else if (outki::UISlice9Fill *g = fill->exact_cast<outki::UISlice9Fill>())
+			else if (outki::ui_slice9_fill *g = fill->exact_cast<outki::ui_slice9_fill>())
 			{
-				float _x0 = x0 - g->ExpandLeft;
-				float _y0 = y0 - g->ExpandTop;
-				float _x1 = x1 + g->ExpandRight;
-				float _y1 = y1 + g->ExpandBottom;
+				float _x0 = x0 - g->expand_left;
+				float _y0 = y0 - g->expand_top;
+				float _x1 = x1 + g->expand_right;
+				float _y1 = y1 + g->expand_bottom;
 
-				float xs[4] = {_x0, _x0 + g->MarginLeft, _x1 - g->MarignRight, _x1 };
-				float ys[4] = {_y0, _y0 + g->MarginLeft, _y1 - g->MarignRight, _y1 };
-				float us[4] = {0, g->MarginLeft, g->texture->Width - g->MarignRight, g->texture->Width };
-				float vs[4] = {0, g->MarginTop, g->texture->Height - g->MarginBottom, g->texture->Height };
+				float xs[4] = { _x0, _x0 + g->margin_left, _x1 - g->marign_right, _x1 };
+				float ys[4] = { _y0, _y0 + g->margin_left, _y1 - g->marign_right, _y1 };
+				float us[4] = { 0, g->margin_left, g->texture->width - g->marign_right, g->texture->width };
+				float vs[4] = {0, g->margin_top, g->texture->height - g->margin_bottom, g->texture->height };
 
 				for (int i=0;i<4;i++)
 				{
-					us[i] /= g->texture->Width;
-					vs[i] /= g->texture->Height;
+					us[i] /= g->texture->width;
+					vs[i] /= g->texture->height;
 				}
 
 				for (int y=0;y<3;y++)

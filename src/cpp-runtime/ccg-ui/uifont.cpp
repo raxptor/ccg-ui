@@ -44,23 +44,23 @@ namespace ccgui
 					}
 				}
 
-				if (pos > width)
+				if (pos > (int)width)
 				{
 					KOSMOS_ERROR("unpack_rle_row unpacked too much! " << pos << " but expected " << width)
 				}
 
-				while (pos < width)
+				while (pos < (int)width)
 					output[pos++] = 0;
 			}
 		}
 
-		layout_data *layout_make(outki::Font *font, glyphcache::data *cache, const char *text, float pixel_size, int max_width, float rendering_scale_hint)
+		layout_data *layout_make(outki::font *font, glyphcache::data *cache, const char *text, float pixel_size, int max_width, float rendering_scale_hint)
 		{
 			if (!text || !text[0])
 				return 0;
 
 			PTK_FATAL_ASSERT(font)
-			PTK_FATAL_ASSERT(font->Outputs_size)
+			PTK_FATAL_ASSERT(font->outputs_size)
 			PTK_FATAL_ASSERT(text)
 
 			int best_index = -1;
@@ -71,12 +71,12 @@ namespace ccgui
 			const float actual_pixel_size = rendering_scale_hint * pixel_size;
 			float scaling = 1.0f;
 
-			for (int i=0;i!=font->Outputs_size;i++)
+			for (int i=0;i!=font->outputs_size;i++)
 			{
-				const outki::FontOutput *fo = &font->Outputs[i];
+				const outki::font_output *fo = &font->outputs[i];
 				PTK_FATAL_ASSERT(fo)
 
-				float d = actual_pixel_size - fo->PixelSize;
+				float d = actual_pixel_size - fo->pixel_size;
 				if (d < 0)
 				{
 					d = -0.30f * d;
@@ -86,7 +86,7 @@ namespace ccgui
 				{
 					diff = d;
 					best_index = i;
-					scaling = pixel_size / fo->PixelSize;
+					scaling = pixel_size / fo->pixel_size;
 				}
 			}
 
@@ -132,7 +132,7 @@ namespace ccgui
 			if (state != UTF8_ACCEPT)
 				KOSMOS_WARNING("String contains invalid utf8");
 
-			const outki::FontOutput *fontdata = &font->Outputs[best_index];
+			const outki::font_output *fontdata = &font->outputs[best_index];
 
 			layout_data *layout = new layout_data();
 			layout->fontdata = fontdata;
@@ -142,7 +142,7 @@ namespace ccgui
 			// lookup and translate, might output less glyphs than allocated
 			// if the font does not contain all.
 
-			const outki::FontGlyphPixData *glyphData[MAX_GLYPHS];
+			const outki::font_glyph_pix_data *glyphData[MAX_GLYPHS];
 
 			layout->glyphs_size = 0;
 			for (int i=0;i!=glyphs;i++)
@@ -150,9 +150,9 @@ namespace ccgui
 				layout_glyph *l = &layout->glyphs[layout->glyphs_size];
 				bool gotit = false;
 
-				for (int j=0;j!=fontdata->PixGlyphs_size;j++)
+				for (int j=0;j!=fontdata->pix_glyphs_size;j++)
 				{
-					const outki::FontGlyphPixData *pg = &fontdata->PixGlyphs[j];
+					const outki::font_glyph_pix_data *pg = &fontdata->pix_glyphs[j];
 					glyphData[layout->glyphs_size] = pg;
 
 					if (pg->glyph == glyph_id[i])
@@ -162,11 +162,11 @@ namespace ccgui
 						{
 							unsigned char uncomp[65536];
 							memset(uncomp, 0x00, sizeof(uncomp));
-							for (int h=0;h<pg->pixelHeight;h++)
-								unpack_rle_row(font->RLEData + pg->rleDataBegin[h], pg->rleDataLength[h], &uncomp[h * pg->pixelWidth], pg->pixelWidth);
+							for (int h=0;h<pg->pixel_height;h++)
+								unpack_rle_row(font->rle_data + pg->rle_data_begin[h], pg->rle_data_length[h], &uncomp[h * pg->pixel_width], pg->pixel_width);
 
 							// insert and retry.
-							glyphcache::insert(cache, handle, uncomp, pg->pixelWidth, pg->pixelHeight);
+							glyphcache::insert(cache, handle, uncomp, pg->pixel_width, pg->pixel_height);
 
 							//
 							gotit = glyphcache::get(cache, handle, l->u, l->v, &l->tex);
@@ -192,10 +192,10 @@ namespace ccgui
 				return 0;
 			}
 
-			layout->face_y0 = - scaling * fontdata->BBoxMaxY / 64.0f;
-			layout->face_y1 = - scaling * fontdata->BBoxMinY / 64.0f;
+			layout->face_y0 = - scaling * fontdata->b_box_max_y / 64.0f;
+			layout->face_y1 = -scaling * fontdata->b_box_min_y / 64.0f;
 
-			float pen_break = max_width * fontdata->BBoxMaxY / 64.0f;
+			float pen_break = max_width * fontdata->b_box_max_y / 64.0f;
 			int y_ofs = 0;
 			int pen = 0;
 
@@ -204,7 +204,7 @@ namespace ccgui
 
 			for (int i=0;i!=layout->glyphs_size;i++)
 			{
-				const outki::FontGlyphPixData *glyph = glyphData[i];
+				const outki::font_glyph_pix_data *glyph = glyphData[i];
 				layout_glyph *current = &layout->glyphs[i];
 
 				if (pen > 0)
@@ -212,20 +212,20 @@ namespace ccgui
 					int left = glyph_id[i-1];
 					int right = glyph_id[i];
 
-					for (int k=0;k!=fontdata->KerningCharL_size;k++)
+					for (int k=0;k!=fontdata->kerning_char_l_size;k++)
 					{
-						if (fontdata->KerningCharL[k] == left && fontdata->KerningCharR[k] == right)
+						if (fontdata->kerning_char_l[k] == left && fontdata->kerning_char_r[k] == right)
 						{
-							pen += (int)(scaling * fontdata->KerningOfs[k]);
+							pen += (int)(scaling * fontdata->kerning_ofs[k]);
 							break;
 						}
 					}
 				}
 
-				float x = (float)(scaling * ((pen + glyph->bearingX) / 64.0f));
-				float y = (float)(scaling * (((y_ofs + glyph->bearingY) >> 6)));
-				const int w = (float)(scaling * glyph->pixelWidth);
-				const int h = (float)(scaling * glyph->pixelHeight);
+				float x = (float)(scaling * ((pen + glyph->bearing_x) / 64.0f));
+				float y = (float)(scaling * (((y_ofs + glyph->bearing_y) >> 6)));
+				const int w = (float)(scaling * glyph->pixel_width);
+				const int h = (float)(scaling * glyph->pixel_height);
 
 				if (pixel_snap)
 				{
@@ -256,7 +256,7 @@ namespace ccgui
 							// leave the wordbreak on that line and start next
 							i = k;
 							pen = 0;
-							y_ofs += fontdata->BBoxMaxY - fontdata->BBoxMinY;
+							y_ofs += fontdata->b_box_max_y - fontdata->b_box_min_y;
 							break;
 						}
 						k--;
@@ -314,10 +314,10 @@ namespace ccgui
 
 			switch (h)
 			{
-				case outki::UIHorizontalAlignment_Center:
+				case outki::UI_HORIZONTAL_ALIGNMENT_CENTER:
 					x = (x0 + x1 - (layout->maxx - layout->minx)) / 2 - layout->minx;
 					break;
-				case outki::UIHorizontalAlignment_Right:
+				case outki::UI_HORIZONTAL_ALIGNMENT_RIGHT:
 					x = x1 - (layout->maxx);
 					break;
 				default: // left align
@@ -327,10 +327,10 @@ namespace ccgui
 
 			switch (v)
 			{
-				case outki::UIVerticalAlignment_Top:
+				case outki::UI_VERTICAL_ALIGNMENT_TOP:
 					y = y0 - layout->miny;
 					break;
-				case outki::UIVerticalAlignment_Bottom:
+				case outki::UI_VERTICAL_ALIGNMENT_BOTTOM:
 					y = y1 - layout->maxy;
 					break;
 				default: // center

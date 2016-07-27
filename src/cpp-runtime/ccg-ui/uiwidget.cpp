@@ -15,7 +15,7 @@ namespace ccgui
 		struct element_inst
 		{
 			// layout.
-			outki::UIElement *element;
+			outki::ui_element *element;
 			element_handler_def *fns;
 			element_layout layout;
 			void *data;
@@ -23,12 +23,12 @@ namespace ccgui
 
 		struct instance
 		{
-			outki::UIWidget *widget;
+			outki::ui_widget *widget;
 			element_inst *elements;
 			unsigned int elements_size;
 		};
 
-		instance *create(outki::UIWidget *widget, uiscreen::renderinfo *rinfo)
+		instance *create(outki::ui_widget *widget, uiscreen::renderinfo *rinfo)
 		{
 			instance *d = new instance;
 			d->widget = widget;
@@ -47,7 +47,7 @@ namespace ccgui
 				for (unsigned int j=0;j<widget->layers[i].elements_size;j++)
 				{
 					cur->element = widget->layers[i].elements[j];
-					cur->fns = ccgui::get_element_handler(rinfo->handlers, cur->element->rtti_type_ref());
+					cur->fns = ccgui::get_element_handler(rinfo->handlers, cur->element->rtti_type_id());
 					cur->data = 0;
 					if (cur->fns)
 					{
@@ -101,7 +101,7 @@ namespace ccgui
 					}
 				}
 				
-				outki::UIElement *element = d->elements[i].element;
+				outki::ui_element *element = d->elements[i].element;
 				if (!element)
 				{
 					continue;

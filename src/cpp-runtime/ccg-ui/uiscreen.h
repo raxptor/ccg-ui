@@ -37,10 +37,10 @@ namespace ccgui
 			float render_scaling_hint; // how big layout pixels are in real pixels
 		};
 
-		instance * create(outki::UIScreen *screen, element_handler_set *handlers);
+		instance * create(outki::ui_screen *screen, element_handler_set *handlers);
 		void draw(instance *d, kosmos::render2d::stream *stream, glyphcache::data *cache, uicontext *context, float x0, float y0, float x1, float y1);
 		void free(instance *r);
 
-		bool resolve_texture(instance *d, outki::Texture *texture, resolved_texture * out_resolved, float u0, float v0, float u1, float v1);
+		bool resolve_texture(instance *d, outki::texture *texture, resolved_texture * out_resolved, float u0, float v0, float u1, float v1);
 	}
 }

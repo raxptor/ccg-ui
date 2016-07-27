@@ -3,8 +3,8 @@
 
 namespace outki
 {
-	struct FontOutput;
-	struct Font;
+	struct font_output;
+	struct font;
 }
 
 namespace kosmos
@@ -33,10 +33,10 @@ namespace ccgui
 			unsigned int lines;
 			float minx, miny, maxx, maxy;
 			float face_y0, face_y1;
-			const outki::FontOutput *fontdata;
+			const outki::font_output *fontdata;
 		};
 
-		layout_data *layout_make(outki::Font *font, glyphcache::data *cache, const char *text, float pixel_size, int max_width = -1, float rendering_scale_hint=1);
+		layout_data *layout_make(outki::font *font, glyphcache::data *cache, const char *text, float pixel_size, int max_width = -1, float rendering_scale_hint=1);
 		void layout_draw(kosmos::render2d::stream *stream, layout_data *layout, float x, float y, unsigned long color);
 		void layout_draw_align(kosmos::render2d::stream *stream, layout_data *layout, float x0, float y0, float x1, float y1, int vertical_align, int horizontal_align, unsigned long color);
 		void layout_free(layout_data *layout);

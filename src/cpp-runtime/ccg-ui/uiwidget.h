@@ -24,7 +24,7 @@ namespace ccgui
 			float x0, y0, x1, y1;
 		};
 
-		instance *create(outki::UIWidget *screen, uiscreen::renderinfo *handler_set);
+		instance *create(outki::ui_widget *screen, uiscreen::renderinfo *handler_set);
 		void layout(instance *d, uiscreen::renderinfo *rinfo, const element_layout *layout);
 		void update(instance *d, uiscreen::renderinfo *context);
 		void draw(instance *d, uiscreen::renderinfo *rinfo);

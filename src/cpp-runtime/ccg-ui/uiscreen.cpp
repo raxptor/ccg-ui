@@ -18,13 +18,13 @@ namespace ccgui
 	{
 		struct instance
 		{
-			outki::UIScreen *data;
+			outki::ui_screen *data;
 			uiwidget::instance *root;
 			element_handler_set *handlers;
 			bool owns_handlers;
 		};
 
-		instance * create(outki::UIScreen *screen, element_handler_set *handlers)
+		instance * create(outki::ui_screen *screen, element_handler_set *handlers)
 		{
 			instance *inst = new instance();
 			inst->handlers = handlers;
@@ -42,7 +42,7 @@ namespace ccgui
 			ri.screen = inst;
 			ri.context = 0;
 			ri.handlers = inst->handlers;
-			inst->root = uiwidget::create(screen->Root, &ri);
+			inst->root = uiwidget::create(screen->root, &ri);
 			return inst;
 		}
 
@@ -57,21 +57,21 @@ namespace ccgui
 		void draw(instance *d, kosmos::render2d::stream *stream, glyphcache::data *cache, uicontext *context, float x0, float y0, float x1, float y1)
 		{
 			LIVE_UPDATE(&d->data);
-			LIVE_UPDATE(&d->data->Config);
-			LIVE_UPDATE(&d->data->Root);
+			LIVE_UPDATE(&d->data->config);
+			LIVE_UPDATE(&d->data->root);
 
 			float _x0 = x0;
 			float _y0 = y0;
 			float _x1 = x1;
 			float _y1 = y1;
 
-			if (d->data->Config->PreserveLayoutAspect)
+			if (d->data->config->preserve_layout_aspect)
 			{
-				const float xs = (x1 - x0) / d->data->Root->width;
-				const float ys = (y1 - y0) / d->data->Root->height;
+				const float xs = (x1 - x0) / d->data->root->width;
+				const float ys = (y1 - y0) / d->data->root->height;
 				const float s = xs < ys ? xs : ys;
-				const float w = floorf(s * d->data->Root->width);
-				const float h = floorf(s * d->data->Root->height);
+				const float w = floorf(s * d->data->root->width);
+				const float h = floorf(s * d->data->root->height);
 
 				_x0 = floorf((x0 + x1 - w) / 2.0f);
 				_y0 = floorf((y0 + y1 - h) / 2.0f);
@@ -89,13 +89,13 @@ namespace ccgui
 
 			bool pushed_matrix = false;
 
-			if (d->data->Config->ScaleMode == outki::ScaleMode_Prop_Transform || d->data->Config->ScaleMode == outki::ScaleMode_Prop_Layout)
+			if (d->data->config->scale_mode == outki::SCALE_MODE_PROP_TRANSFORM || d->data->config->scale_mode == outki::SCALE_MODE_PROP_LAYOUT)
 			{
-				float width = (_x1 - _x0) / d->data->Root->width;
-				float height = (_y1 - _y0) / d->data->Root->height;
+				float width = (_x1 - _x0) / d->data->root->width;
+				float height = (_y1 - _y0) / d->data->root->height;
 				float scale = width < height ? width : height;
 
-				if (d->data->Config->SnapScale)
+				if (d->data->config->snap_scale)
 				{
 					// snap scale to nice values
 					const int num =7;
@@ -110,7 +110,7 @@ namespace ccgui
 					}
 				}
 
-				if (d->data->Config->ScaleMode == outki::ScaleMode_Prop_Transform)
+				if (d->data->config->scale_mode == outki::SCALE_MODE_PROP_TRANSFORM)
 				{
 					pushed_matrix = true;
 					kosmos::render2d::set_2d_transform(stream, scale, scale, (int)_x0/scale, (int)_y0/scale);
@@ -152,7 +152,7 @@ namespace ccgui
 			uiwidget::draw(d->root, &ri);
 		}
 
-		bool resolve_texture(instance *d, outki::Texture *texture, resolved_texture * out_resolved, float u0, float v0, float u1, float v1)
+		bool resolve_texture(instance *d, outki::texture *texture, resolved_texture * out_resolved, float u0, float v0, float u1, float v1)
 		{
 			if (!texture)
 			{
@@ -160,29 +160,29 @@ namespace ccgui
 				return false;
 			}
 			
-			for (unsigned int i=0;i<d->data->Atlases_size;i++)
+			for (unsigned int i=0;i<d->data->atlases_size;i++)
 			{
-				outki::Atlas *atlas = d->data->Atlases[i];
+				outki::atlas *atlas = d->data->atlases[i];
 				if (atlas)
 				{
-					for (unsigned int j=0;j<atlas->Outputs_size;j++)
+					for (unsigned int j=0;j<atlas->outputs_size;j++)
 					{
-						const outki::AtlasOutput *output = &atlas->Outputs[j];
-						if (output->Scale != 1.0f)
+						const outki::atlas_output *output = &atlas->outputs[j];
+						if (output->scale != 1.0f)
 						{
 							continue;
 						}
 
-						for (unsigned int k=0;k<output->Entries_size;k++)
+						for (unsigned int k=0;k<output->entries_size;k++)
 						{
-							const outki::AtlasEntry *entry = &output->Entries[k];
+							const outki::atlas_entry *entry = &output->entries[k];
 							if (!strcmp(entry->id, texture->id))
 							{
 								out_resolved->u0 = entry->u0 + (entry->u1 - entry->u0) * u0;
 								out_resolved->v0 = entry->v0 + (entry->v1 - entry->v0) * v0;
 								out_resolved->u1 = entry->u0 + (entry->u1 - entry->u0) * u1;
 								out_resolved->v1 = entry->v0 + (entry->v1 - entry->v0) * v1;
-								out_resolved->texture = kosmos::render::load_texture(output->Texture);
+								out_resolved->texture = kosmos::render::load_texture(output->texture);
 								return true;
 							}
 						}
@@ -195,7 +195,7 @@ namespace ccgui
 			out_resolved->u1 = u1;
 			out_resolved->v1 = v1;
 			
-			if (texture->Output)
+			if (texture->output)
 			{
 				out_resolved->texture = kosmos::render::load_texture(texture);
 				return true;

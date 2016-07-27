@@ -8,9 +8,9 @@ namespace ccgui
 	namespace uiscreen { struct instance; struct renderinfo; }
 	namespace uiwidget { struct element_layout; }
 
-	typedef void* (*element_init_fn)(uiscreen::renderinfo *rinfo, outki::UIElement *element, void *instance_data_inplace);
-	typedef void  (*element_layout_fn)(uiscreen::renderinfo *rinfo, outki::UIElement *element, uiwidget::element_layout *layout, void *instance_data);
-	typedef void  (*element_update_draw_fn)(uiscreen::renderinfo *rinfo, outki::UIElement *element, uiwidget::element_layout *layout, void *instance_data);
+	typedef void* (*element_init_fn)(uiscreen::renderinfo *rinfo, outki::ui_element *element, void *instance_data_inplace);
+	typedef void  (*element_layout_fn)(uiscreen::renderinfo *rinfo, outki::ui_element *element, uiwidget::element_layout *layout, void *instance_data);
+	typedef void  (*element_update_draw_fn)(uiscreen::renderinfo *rinfo, outki::ui_element *element, uiwidget::element_layout *layout, void *instance_data);
 	typedef void  (*element_done_fn)(void *instance_data);
 	
 	struct element_handler_def
@@ -34,7 +34,7 @@ namespace ccgui
 		typedef void (*update_draw_fn)(uiscreen::renderinfo *rinfo, element_type *element, uiwidget::element_layout *layout, instance_type *instance_data);
 		typedef void (*done_fn)(instance_type *t);
 		
-		static void* def_init(uiscreen::renderinfo *rinfo, outki::UIElement *element, void *inplace)
+		static void* def_init(uiscreen::renderinfo *rinfo, outki::ui_element *element, void *inplace)
 		{
 			if (inplace)
 				return 0;
@@ -90,10 +90,10 @@ namespace ccgui
 		bool is_mouseover(uicontext *context, element_id elId);
 		bool is_mousepressed(uicontext *context, element_id elId);
 		bool button_logic(uiscreen::renderinfo *rinfo, element_id elId, float x0, float y0, float x1, float y1);
-		void draw_fill(uiscreen::renderinfo *rinfo, float x0, float y0, float x1, float y1, outki::UIFill *fill);
+		void draw_fill(uiscreen::renderinfo *rinfo, float x0, float y0, float x1, float y1, outki::ui_fill *fill);
 	}
 	
-	inline unsigned int col2int(outki::UIColor const & col)
+	inline unsigned int col2int(outki::ui_color const & col)
 	{
 		return (col.a << 24) | (col.b << 16) | (col.g << 8) | col.r;
 	}

@@ -3,8 +3,8 @@
 
 enum UIScaleMode
 {
-	ScaleMode_None,
-	ScaleMode_Prop_Layout,
+	ScaleMode_None
+	ScaleMode_Prop_Layout
 	ScaleMode_Prop_Transform
 }
 

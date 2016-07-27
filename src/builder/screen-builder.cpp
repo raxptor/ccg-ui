@@ -17,14 +17,14 @@ struct screenbuilder : putki::builder::handler_i
 
 	virtual bool handle(putki::builder::build_context *context, putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj)
 	{
-		inki::UIScreen *screen = (inki::UIScreen *) obj;
+		inki::ui_screen *screen = (inki::ui_screen *) obj;
 
 		// ERR IF screen->Config == null
 
-		if (screen && screen->Config && screen->Config->SnapScale)
+		if (screen && screen->config && screen->config->snap_scale)
 		{
 			for (int i=0;i<g_outputTexConfigs;i++)
-				screen->ScalingForSnapping.push_back(g_outputTexConf[i].scale);
+				screen->scaling_for_snapping.push_back(g_outputTexConf[i].scale);
 		}
 
 		return false;

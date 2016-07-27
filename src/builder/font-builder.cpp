@@ -85,33 +85,33 @@ struct fontbuilder : putki::builder::handler_i
 
 	virtual bool handle(putki::builder::build_context *context, putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj)
 	{
-		inki::Font *font = (inki::Font *) obj;
+		inki::font *font = (inki::font *) obj;
 
-		RECORD_INFO(record, "Source is " << font->Source)
+		RECORD_INFO(record, "Source is " << font->source)
 
-		if (font->Latin1)
+		if (font->latin1)
 		{
 			for (int i='a';i<='z';i++)
-				font->Characters.push_back(i);
+				font->characters.push_back(i);
 			for (int i='A';i<='Z';i++)
-				font->Characters.push_back(i);
+				font->characters.push_back(i);
 			for (int i='0';i<='9';i++)
-				font->Characters.push_back(i);
+				font->characters.push_back(i);
 
 			const char *special = "!()#?:/\\<>[] .,";
 			for (int i=0;i<strlen(special);i++)
-				font->Characters.push_back(special[i]);
+				font->characters.push_back(special[i]);
 		}
 
-		putki::build_db::add_external_resource_dependency(record, font->Source.c_str(), putki::resource::signature(builder, font->Source.c_str()).c_str());
+		putki::build_db::add_external_resource_dependency(record, font->source.c_str(), putki::resource::signature(builder, font->source.c_str()).c_str());
 
 		row_cache cache;
 
 		const char *fnt_data;
 		long long fnt_len;
-		if (!putki::resource::load(builder, font->Source.c_str(), &fnt_data, &fnt_len))
+		if (!putki::resource::load(builder, font->source.c_str(), &fnt_data, &fnt_len))
 		{
-			RECORD_WARNING(record, "Could not load font at [" << font->Source << "]!")
+			RECORD_WARNING(record, "Could not load font at [" << font->source << "]!")
 			return false;
 		}
 
@@ -135,9 +135,9 @@ struct fontbuilder : putki::builder::handler_i
 		int totalGlyphs = 0;
 		int totalGlyphPixelData = 0;
 
-		for (unsigned int sz=0;sz<font->PixelSizes.size();sz++)
+		for (unsigned int sz=0;sz<font->pixel_sizes.size();sz++)
 		{
-			if (FT_Set_Pixel_Sizes(face, 0, font->PixelSizes[sz]))
+			if (FT_Set_Pixel_Sizes(face, 0, font->pixel_sizes[sz]))
 			{
 				RECORD_WARNING(record, "Could not set char or pixel size.");
 				goto cleanup;
@@ -146,17 +146,17 @@ struct fontbuilder : putki::builder::handler_i
 			std::vector< rbp::InputRect > packs;
 			std::vector<TmpGlyphInfo> glyphs;
 
-			inki::FontOutput up;
-			up.PixelSize = font->PixelSizes[sz];
+			inki::font_output up;
+			up.pixel_size = font->pixel_sizes[sz];
 
-			up.BBoxMinY = 1000000;
-			up.BBoxMaxY = -100000;
+			up.b_box_min_y = 1000000;
+			up.b_box_max_y = -100000;
 
-			int border = 2 + font->OutlineWidth;
+			int border = 2 + font->outline_width;
 
-			for (unsigned int i=0;i<font->Characters.size();i++)
+			for (unsigned int i=0;i<font->characters.size();i++)
 			{
-				int idx = FT_Get_Char_Index(face, font->Characters[i]);
+				int idx = FT_Get_Char_Index(face, font->characters[i]);
 				if (FT_Load_Glyph(face, idx, FT_LOAD_NO_BITMAP))
 				{
 					RECORD_WARNING(record, "Could not load glyph face.");
@@ -182,25 +182,25 @@ struct fontbuilder : putki::builder::handler_i
 
 				const int y0 = g.bearingY - 64 * g.h;
 				const int y1 = g.bearingY;
-				if (y0 < up.BBoxMinY)
+				if (y0 < up.b_box_min_y)
 				{
-					up.BBoxMinY = y0;
+					up.b_box_min_y = y0;
 				}
-				if (y1 > up.BBoxMaxY)
+				if (y1 > up.b_box_max_y)
 				{
-					up.BBoxMaxY = y1;
+					up.b_box_max_y = y1;
 				}
 
-				for (unsigned int j=0;j<font->Characters.size();j++)
+				for (unsigned int j=0;j<font->characters.size();j++)
 				{
 					FT_Vector kerning;
-					if (!FT_Get_Kerning(face, font->Characters[i], font->Characters[j], FT_KERNING_DEFAULT, &kerning))
+					if (!FT_Get_Kerning(face, font->characters[i], font->characters[j], FT_KERNING_DEFAULT, &kerning))
 					{
 						if (kerning.x != 0)
 						{
-							up.KerningCharL.push_back(font->Characters[i]);
-							up.KerningCharR.push_back(font->Characters[j]);
-							up.KerningOfs.push_back(kerning.x);
+							up.kerning_char_l.push_back(font->characters[i]);
+							up.kerning_char_r.push_back(font->characters[j]);
+							up.kerning_ofs.push_back(kerning.x);
 						}
 					}
 				}
@@ -252,7 +252,7 @@ struct fontbuilder : putki::builder::handler_i
 
 			unsigned int * outBmp = 0;
 
-			if (font->TextureConfiguration)
+			if (font->texture_configuration)
 			{
 				outBmp = new unsigned int[out_width * out_height];
 				for (int y=0;y<out_height;y++)
@@ -272,21 +272,21 @@ struct fontbuilder : putki::builder::handler_i
 				// insert into output.
 				if (outBmp)
 				{
-					inki::FontGlyph fg;
-					fg.glyph = font->Characters[packedRects[k].id];
+					inki::font_glyph fg;
+					fg.glyph = font->characters[packedRects[k].id];
 					
-					int outline = font->OutlineWidth;
+					int outline = font->outline_width;
 					
 					fg.u0 = float(out.x + border - outline) / float(out_width);
 					fg.v0 = float(out.y + border - outline) / float(out_height);
 					fg.u1 = float(out.x + border + g.w + outline) / float(out_width);
 					fg.v1 = float(out.y + border + g.h + outline) / float(out_height);
-					fg.pixelWidth = g.w + 2 * outline;
-					fg.pixelHeight = g.h + 2 * outline;
-					fg.bearingX = g.bearingX - outline * 64;
-					fg.bearingY = - g.bearingY - outline * 64;
+					fg.pixel_width = g.w + 2 * outline;
+					fg.pixel_height = g.h + 2 * outline;
+					fg.bearing_x = g.bearingX - outline * 64;
+					fg.bearing_y = - g.bearingY - outline * 64;
 					fg.advance = g.advance;
-					up.Glyphs.push_back(fg);
+					up.glyphs.push_back(fg);
 
 					for (int y=0;y<g.h;y++)
 					{
@@ -300,7 +300,7 @@ struct fontbuilder : putki::builder::handler_i
 				totalGlyphPixelData += g.w * g.h;
 				totalGlyphs++;
 
-				if (font->OutputPixelData)
+				if (font->output_pixel_data)
 				{
 					if (g.w > 255 || g.h > 255)
 					{
@@ -309,12 +309,12 @@ struct fontbuilder : putki::builder::handler_i
 					}
 
 					// These do not have any u/v data, only the pixel data itself for run-time atlas generation/rendering.
-					inki::FontGlyphPixData pd;
-					pd.glyph = font->Characters[packedRects[k].id];
-					pd.pixelWidth = g.w;
-					pd.pixelHeight = g.h;
-					pd.bearingX = g.bearingX;
-					pd.bearingY = - g.bearingY;
+					inki::font_glyph_pix_data pd;
+					pd.glyph = font->characters[packedRects[k].id];
+					pd.pixel_width = g.w;
+					pd.pixel_height = g.h;
+					pd.bearing_x = g.bearingX;
+					pd.bearing_y = - g.bearingY;
 					pd.advance = g.advance;
 					for (int r=0;r<g.h;r++)
 					{
@@ -322,9 +322,9 @@ struct fontbuilder : putki::builder::handler_i
 						row_cache_add(&cache, &g.data[ofs], g.w);
 	
 						for (int c=0;c<g.w;c++)
-							pd.pixelData.push_back(g.data[ofs + c]);
+							pd.pixel_data.push_back(g.data[ofs + c]);
 					}
-					up.PixGlyphs.push_back(pd);
+					up.pix_glyphs.push_back(pd);
 				}
 			}
 
@@ -335,15 +335,15 @@ struct fontbuilder : putki::builder::handler_i
 			if (outBmp)
 			{
 				std::stringstream ss;
-				ss << path << "_i" << sz << "_px" << font->PixelSizes[sz] << "_glyphs";
+				ss << path << "_i" << sz << "_px" << font->pixel_sizes[sz] << "_glyphs";
 				
-				if (font->OutlineWidth > 0)
+				if (font->outline_width > 0)
 				{
 					unsigned int *temp = new unsigned int[out_width * out_height];
 					unsigned int *outline = new unsigned int[out_width * out_height];
 					
 					memcpy(outline, outBmp, out_width * out_height * 4);
-					for (int i=0;i<font->OutlineWidth;i++)
+					for (int i=0;i<font->outline_width;i++)
 					{
 						make_outline(temp, outline, out_width, out_height);
 						memcpy(outline, temp, out_width * out_height * 4);
@@ -360,58 +360,58 @@ struct fontbuilder : putki::builder::handler_i
 				putki::builder::touched_temp_resource(builder, output_atlas_path.c_str());
 
 				// create new texture.
-				inki::Texture *texture = inki::Texture::alloc();
-				texture->Source = output_atlas_path;
-				texture->Configuration = font->TextureConfiguration;
+				inki::texture *texture = inki::texture::alloc();
+				texture->source = output_atlas_path;
+				texture->configuration = font->texture_configuration;
 
 				// give font the texture.
 
-				up.OutputTexture = texture;
+				up.output_texture = texture;
 
 				// add it so it will be built.
 				add_output(context, record, outpath.c_str(), texture);
 				delete [] outBmp;
 			}
 
-			font->Outputs.push_back(up);
+			font->outputs.push_back(up);
 		}
 
-		if (font->OutputPixelData)
+		if (font->output_pixel_data)
 		{
 			// post processing
-			font->RLEData.clear();
-			row_cache_compress(&cache, &font->RLEData);
+			font->rle_data.clear();
+			row_cache_compress(&cache, &font->rle_data);
 
 			RECORD_INFO(record, "Font contains " << totalGlyphs << " and total pixel data " << totalGlyphPixelData);
-			RECORD_INFO(record, "Pixel data RLE compressed to " << font->RLEData.size());
+			RECORD_INFO(record, "Pixel data RLE compressed to " << font->rle_data.size());
 
-			for (int i=0;i<font->Outputs.size();i++)
+			for (int i=0;i<font->outputs.size();i++)
 			{
-				inki::FontOutput *out = &font->Outputs[i];
-				for (int j=0;j!=out->PixGlyphs.size();j++)
+				inki::font_output *out = &font->outputs[i];
+				for (int j=0;j!=out->pix_glyphs.size();j++)
 				{
-					inki::FontGlyphPixData *pd = &out->PixGlyphs[j];
+					inki::font_glyph_pix_data*pd = &out->pix_glyphs[j];
 
-					for (int h=0;h<pd->pixelHeight;h++)
+					for (int h=0;h<pd->pixel_height;h++)
 					{
-						int ofs = h * pd->pixelWidth;
-						row *r = row_cache_add(&cache, &pd->pixelData[ofs], pd->pixelWidth);
-						if (r && (r->comp_data_begin + r->comp_data_size) > font->RLEData.size())
+						int ofs = h * pd->pixel_width;
+						row *r = row_cache_add(&cache, &pd->pixel_data[ofs], pd->pixel_width);
+						if (r && (r->comp_data_begin + r->comp_data_size) > font->rle_data.size())
 							RECORD_ERROR(record, "Internal build error in glyph cache, row_cache_add returned bad on known glyph row.")
 
 						if (!r)
 						{
-							pd->rleDataBegin.push_back(0);
-							pd->rleDataLength.push_back(0);
+							pd->rle_data_begin.push_back(0);
+							pd->rle_data_length.push_back(0);
 						}
 						else
 						{
-							pd->rleDataBegin.push_back(r->comp_data_begin);
-							pd->rleDataLength.push_back(r->comp_data_size);
+							pd->rle_data_begin.push_back(r->comp_data_begin);
+							pd->rle_data_length.push_back(r->comp_data_size);
 						}
 					}
 
-					pd->pixelData.clear();
+					pd->pixel_data.clear();
 				}
 			}
 

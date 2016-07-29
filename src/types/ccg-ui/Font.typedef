@@ -35,8 +35,7 @@ FontGlyphPixData [in, out] non-instantiable
 
 	// These point into the main Fonts RLEData output, which
 	// is shared between all sizes. These arrays are pixelHeight long.
-	int[] rleDataBegin
-	byte[] rleDataLength
+	byte[] compressedPixelData
 
 	// This is just for convenience caching in the builder.
 	[no-out] byte[] pixelData
@@ -59,11 +58,11 @@ Font [in, out]
 {
 	file Source
 	bool Latin1 = true
+	bool TradChinese = false
 	[no-out] bool OutputPixelData = false
 	[no-out] int[] Characters
 	[no-out] int[] PixelSizes
 	[no-out] ptr TextureConfiguration TextureConfiguration
 	[hidden] FontOutput[] Outputs
-	[hidden] byte[] RLEData
 	int OutlineWidth
 }

@@ -20,8 +20,6 @@
 #include <kosmos-builder-utils/binpacker/maxrects_binpack.h>
 #include <kosmos-builder-utils/pngutil.h>
 
-#include "rowcache.h"
-
 struct TmpGlyphInfo
 {
 	int w, h;
@@ -31,6 +29,70 @@ struct TmpGlyphInfo
 };
 
 namespace {
+    
+    // might cut a bit or two of precision here and there.
+    int compress_glyph(std::vector<unsigned char> const & input, unsigned char *output)
+    {
+        const int expand = 64;
+        bool start_zeroes = true;
+        
+        std::vector<bool> tmp;
+        tmp.reserve(1024);
+        for (int j=0;j<input.size();j++)
+        {
+            const int ones = input[j] * expand / 255;
+            const int zeroes = expand - ones;
+            
+            if (start_zeroes)
+            {
+                for (int k=0;k<zeroes;k++) tmp.push_back(false);
+                for (int k=0;k<ones;k++) tmp.push_back(true);
+                if (ones > 0)
+                    start_zeroes = false;
+            }
+            else
+            {
+                for (int k=0;k<ones;k++) tmp.push_back(true);
+                for (int k=0;k<zeroes;k++) tmp.push_back(false);
+                if (zeroes > 0)
+                    start_zeroes = true;
+            }
+        }
+        
+        int outsize = 0;
+        int runlength = 0;
+        int old_val = 0;
+        std::vector<int> lengths;
+        lengths.reserve(1024);
+        for (int i=0;i<tmp.size();i++)
+        {
+            if (old_val == tmp[i])
+            {
+                runlength++;
+            }
+            else
+            {
+                lengths.push_back(runlength);
+                runlength = 1;
+                old_val = tmp[i];
+            }
+        }
+        
+        for (int s=0;s<lengths.size();s++)
+        {
+            int val = lengths[s];
+            while (val > 0x7F)
+            {
+                output[outsize++] = 0x80 | (val & 0x7F);
+                val = val >> 7;
+            }
+            output[outsize++] = val & 0x7F;
+        }
+        
+        return outsize;
+    }
+    
+    
 	const char *builder_version = "font-builder-3b";
 	
 	void make_outline(unsigned int *dest, unsigned int *source, int width, int height)
@@ -88,7 +150,7 @@ struct fontbuilder : putki::builder::handler_i
 		inki::Font *font = (inki::Font *) obj;
 
 		RECORD_INFO(record, "Source is " << font->Source)
-
+		
 		if (font->Latin1)
 		{
 			for (int i='a';i<='z';i++)
@@ -102,10 +164,14 @@ struct fontbuilder : putki::builder::handler_i
 			for (int i=0;i<strlen(special);i++)
 				font->Characters.push_back(special[i]);
 		}
+		
+		if (font->TradChinese)
+		{
+			for (int i=0x4E00;i<0x6000;i++)
+				font->Characters.push_back(i);
+		}
 
 		putki::build_db::add_external_resource_dependency(record, font->Source.c_str(), putki::resource::signature(builder, font->Source.c_str()).c_str());
-
-		row_cache cache;
 
 		const char *fnt_data;
 		long long fnt_len;
@@ -159,16 +225,16 @@ struct fontbuilder : putki::builder::handler_i
 				int idx = FT_Get_Char_Index(face, font->Characters[i]);
 				if (FT_Load_Glyph(face, idx, FT_LOAD_NO_BITMAP))
 				{
-					RECORD_WARNING(record, "Could not load glyph face.");
+					//RECORD_WARNING(record, "Could not load glyph face.");
 					continue;
 				}
 
 				if (FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL))
 				{
-					RECORD_WARNING(record, "Could not render glyph.");
+					//RECORD_WARNING(record, "Could not render glyph.");
 					continue;
 				}
-
+                
 				FT_Bitmap *bmp = &face->glyph->bitmap;
 
 				TmpGlyphInfo g;
@@ -316,11 +382,11 @@ struct fontbuilder : putki::builder::handler_i
 					pd.bearingX = g.bearingX;
 					pd.bearingY = - g.bearingY;
 					pd.advance = g.advance;
+                    
 					for (int r=0;r<g.h;r++)
 					{
+                        pd.pixelData.reserve(g.w * g.h);
 						int ofs = r * g.w;
-						row_cache_add(&cache, &g.data[ofs], g.w);
-	
 						for (int c=0;c<g.w;c++)
 							pd.pixelData.push_back(g.data[ofs + c]);
 					}
@@ -378,43 +444,36 @@ struct fontbuilder : putki::builder::handler_i
 
 		if (font->OutputPixelData)
 		{
-			// post processing
-			font->RLEData.clear();
-			row_cache_compress(&cache, &font->RLEData);
-
-			RECORD_INFO(record, "Font contains " << totalGlyphs << " and total pixel data " << totalGlyphPixelData);
-			RECORD_INFO(record, "Pixel data RLE compressed to " << font->RLEData.size());
-
+            unsigned int total = 0;
 			for (int i=0;i<font->Outputs.size();i++)
 			{
 				inki::FontOutput *out = &font->Outputs[i];
 				for (int j=0;j!=out->PixGlyphs.size();j++)
 				{
 					inki::FontGlyphPixData *pd = &out->PixGlyphs[j];
+                    
+                    printf("compressing %d/%d\n", i, j);
+                    
+                    unsigned char tmp[256*1024];
+                    int bt = compress_glyph(   V.snaoe*STaoeräårlecöä+"5+67ygfg'pd->pixelData, tmp);
+                    if (bt > sizeof(tmp))
+                    {
+                        RECORD_ERROR(record, "Smashed stack!");
+                        break;
+                    }
+                    
+//                    for (int k=0;k<bt;k++)
+//                      pd->compressedPixelData.push_back(tmp[k]);
+                    for (int k=0;k<pd->pixelData.size();k++)
+                        pd->compressedPixelData.push_back(pd->pixelData[k]);
 
-					for (int h=0;h<pd->pixelHeight;h++)
-					{
-						int ofs = h * pd->pixelWidth;
-						row *r = row_cache_add(&cache, &pd->pixelData[ofs], pd->pixelWidth);
-						if (r && (r->comp_data_begin + r->comp_data_size) > font->RLEData.size())
-							RECORD_ERROR(record, "Internal build error in glyph cache, row_cache_add returned bad on known glyph row.")
-
-						if (!r)
-						{
-							pd->rleDataBegin.push_back(0);
-							pd->rleDataLength.push_back(0);
-						}
-						else
-						{
-							pd->rleDataBegin.push_back(r->comp_data_begin);
-							pd->rleDataLength.push_back(r->comp_data_size);
-						}
-					}
-
-					pd->pixelData.clear();
+//                    pd->pixelData.clear();
+                    total += bt;
 				}
 			}
-
+            
+            RECORD_INFO(record, "Font contains " << totalGlyphs << " glyphs and total pixel data " << totalGlyphPixelData);
+            RECORD_INFO(record, "Pixel data compresses to " << total << " bytes");
 		}
 
 cleanup:

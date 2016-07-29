@@ -1,9 +1,7 @@
 #include <putki/builder/build.h>
 #include <putki/builder/builder.h>
-#include <putki/builder/resource.h>
 #include <putki/builder/build-db.h>
 #include <putki/builder/log.h>
-#include <putki/builder/db.h>
 
 #include <iostream>
 #include <sstream>
@@ -30,9 +28,8 @@ struct TmpGlyphInfo
 	unsigned char *data;
 };
 
-namespace {
-	const char *builder_version = "font-builder-3b";
-	
+namespace 
+{
 	void make_outline(unsigned int *dest, unsigned int *source, int width, int height)
 	{
 		//
@@ -75,19 +72,12 @@ namespace {
 			}
 		}
 	}
-}
 
-struct fontbuilder : putki::builder::handler_i
-{
-	virtual const char *version() {
-		return builder_version;
-	}
-
-	virtual bool handle(putki::builder::build_context *context, putki::builder::data *builder, putki::build_db::record *record, putki::db::data *input, const char *path, putki::instance_t obj)
+	bool build_font(const putki::builder::build_info* info)
 	{
-		inki::font *font = (inki::font *) obj;
+		inki::font *font = (inki::font *) info->object;
 
-		RECORD_INFO(record, "Source is " << font->source)
+		RECORD_INFO(info->record, "Source is " << font->source)
 
 		if (font->latin1)
 		{
@@ -103,31 +93,28 @@ struct fontbuilder : putki::builder::handler_i
 				font->characters.push_back(special[i]);
 		}
 
-		putki::build_db::add_external_resource_dependency(record, font->source.c_str(), putki::resource::signature(builder, font->source.c_str()).c_str());
-
 		row_cache cache;
 
-		const char *fnt_data;
-		long long fnt_len;
-		if (!putki::resource::load(builder, font->source.c_str(), &fnt_data, &fnt_len))
+		putki::builder::resource res;
+		if (!putki::builder::fetch_resource(info, font->source.c_str(), &res))
 		{
-			RECORD_WARNING(record, "Could not load font at [" << font->source << "]!")
+			RECORD_WARNING(info->record, "Could not load font at [" << font->source << "]!")
 			return false;
 		}
 
 		FT_Library ft;
 		if (FT_Init_FreeType(&ft))
 		{
-			RECORD_WARNING(record, "Could not initialize freetype");
-			delete [] fnt_data;
+			RECORD_WARNING(info->record, "Could not initialize freetype");
+			putki::builder::free_resource(&res);
 			return false;
 		}
 
 		FT_Face face;
-		if (FT_New_Memory_Face(ft, (const FT_Byte *)fnt_data, (FT_Long)fnt_len, 0, &face))
+		if (FT_New_Memory_Face(ft, (const FT_Byte *)res.data, (FT_Long)res.size, 0, &face))
 		{
-			RECORD_WARNING(record, "Could not load font face");
-			delete [] fnt_data;
+			RECORD_WARNING(info->record, "Could not load font face");
+			putki::builder::free_resource(&res);
 			FT_Done_FreeType(ft);
 			return false;
 		}
@@ -139,11 +126,11 @@ struct fontbuilder : putki::builder::handler_i
 		{
 			if (FT_Set_Pixel_Sizes(face, 0, font->pixel_sizes[sz]))
 			{
-				RECORD_WARNING(record, "Could not set char or pixel size.");
+				RECORD_WARNING(info->record, "Could not set char or pixel size.");
 				goto cleanup;
 			}
 
-			std::vector< rbp::InputRect > packs;
+			std::vector<rbp::InputRect> packs;
 			std::vector<TmpGlyphInfo> glyphs;
 
 			inki::font_output up;
@@ -159,13 +146,13 @@ struct fontbuilder : putki::builder::handler_i
 				int idx = FT_Get_Char_Index(face, font->characters[i]);
 				if (FT_Load_Glyph(face, idx, FT_LOAD_NO_BITMAP))
 				{
-					RECORD_WARNING(record, "Could not load glyph face.");
+					RECORD_WARNING(info->record, "Could not load glyph face.");
 					continue;
 				}
 
 				if (FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL))
 				{
-					RECORD_WARNING(record, "Could not render glyph.");
+					RECORD_WARNING(info->record, "Could not render glyph.");
 					continue;
 				}
 
@@ -304,7 +291,7 @@ struct fontbuilder : putki::builder::handler_i
 				{
 					if (g.w > 255 || g.h > 255)
 					{
-						RECORD_WARNING(record, "Ignoring glyph with dimensions " << g.w << "x" << g.h << " because u8 is used for size in output");
+						RECORD_WARNING(info->record, "Ignoring glyph with dimensions " << g.w << "x" << g.h << " because u8 is used for size in output");
 						continue;
 					}
 
@@ -335,7 +322,7 @@ struct fontbuilder : putki::builder::handler_i
 			if (outBmp)
 			{
 				std::stringstream ss;
-				ss << path << "_i" << sz << "_px" << font->pixel_sizes[sz] << "_glyphs";
+				ss << "i" << sz << "_px" << font->pixel_sizes[sz] << "_glyphs";
 				
 				if (font->outline_width > 0)
 				{
@@ -354,13 +341,12 @@ struct fontbuilder : putki::builder::handler_i
 					delete [] outline;
 				}
 
-				std::string outpath = ss.str();
-				std::string output_atlas_path = ss.str() + ".png";
-				output_atlas_path = ccgui::pngutil::write_to_temp(builder, output_atlas_path.c_str(), outBmp, out_width, out_height);
-				putki::builder::touched_temp_resource(builder, output_atlas_path.c_str());
+				kosmos::pngutil::write_buffer wb = kosmos::pngutil::write_to_mem(outBmp, out_width, out_height);
+				std::string output_atlas_path = putki::builder::store_resource_tag(info, "out.png", wb.output, wb.size);
+				::free(wb.output);
 
 				// create new texture.
-				inki::texture *texture = inki::texture::alloc();
+				putki::ptr<inki::texture> texture = putki::builder::create_build_output<inki::texture>(info, ss.str().c_str());
 				texture->source = output_atlas_path;
 				texture->configuration = font->texture_configuration;
 
@@ -369,7 +355,6 @@ struct fontbuilder : putki::builder::handler_i
 				up.output_texture = texture;
 
 				// add it so it will be built.
-				add_output(context, record, outpath.c_str(), texture);
 				delete [] outBmp;
 			}
 
@@ -382,8 +367,8 @@ struct fontbuilder : putki::builder::handler_i
 			font->rle_data.clear();
 			row_cache_compress(&cache, &font->rle_data);
 
-			RECORD_INFO(record, "Font contains " << totalGlyphs << " and total pixel data " << totalGlyphPixelData);
-			RECORD_INFO(record, "Pixel data RLE compressed to " << font->rle_data.size());
+			RECORD_INFO(info->record, "Font contains " << totalGlyphs << " and total pixel data " << totalGlyphPixelData);
+			RECORD_INFO(info->record, "Pixel data RLE compressed to " << font->rle_data.size());
 
 			for (int i=0;i<font->outputs.size();i++)
 			{
@@ -392,12 +377,14 @@ struct fontbuilder : putki::builder::handler_i
 				{
 					inki::font_glyph_pix_data*pd = &out->pix_glyphs[j];
 
-					for (int h=0;h<pd->pixel_height;h++)
+					for (int h = 0; h<pd->pixel_height; h++)
 					{
 						int ofs = h * pd->pixel_width;
 						row *r = row_cache_add(&cache, &pd->pixel_data[ofs], pd->pixel_width);
 						if (r && (r->comp_data_begin + r->comp_data_size) > font->rle_data.size())
-							RECORD_ERROR(record, "Internal build error in glyph cache, row_cache_add returned bad on known glyph row.")
+						{
+							RECORD_ERROR(info->record, "Internal build error in glyph cache, row_cache_add returned bad on known glyph row.")
+						}
 
 						if (!r)
 						{
@@ -418,14 +405,16 @@ struct fontbuilder : putki::builder::handler_i
 		}
 
 cleanup:
-		delete [] fnt_data;
+		putki::builder::free_resource(&res);
 		FT_Done_FreeType(ft);
-		return false;
+		return true;
 	}
-};
+}
 
 void register_font_builder(putki::builder::data *builder)
 {
-	static fontbuilder fb;
-	putki::builder::add_data_builder(builder, "Font", &fb);
+	putki::builder::handler_info info[1] = {
+		{ inki::font::type_id(), "font-builder-1", build_font, 0 }
+	};
+	putki::builder::add_handlers(builder, &info[0], &info[1]);
 }

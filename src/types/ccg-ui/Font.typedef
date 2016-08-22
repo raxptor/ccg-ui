@@ -57,7 +57,7 @@ FontOutput [in, out] non-instantiable
 
 Font [in, out]
 {
-	file Source
+	[no-out] file Source
 	bool Latin1 = true
 	[no-out] bool OutputPixelData = false
 	[no-out] int[] Characters

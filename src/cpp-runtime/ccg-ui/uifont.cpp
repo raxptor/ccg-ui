@@ -289,11 +289,11 @@ namespace ccgui
 				if (!cur->tex)
 					continue;
 
-/*				if (i == 0)
+				if (i == 0)
 				{
 					kosmos::render2d::tex_rect(stream, cur->tex, 0, 0, 256, 256, 0, 0, 1 ,1, color);
 				}
-*/
+
 				kosmos::render2d::tex_rect(stream, cur->tex,
 					x + cur->x0,
 					y + cur->y0,

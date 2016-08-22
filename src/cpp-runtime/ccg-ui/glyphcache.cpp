@@ -41,16 +41,8 @@ namespace ccgui
 			d->width = width;
 			d->height = height;
 			d->alloc = kosmos::alloc2d::create(width, height);
-
-			glGenTextures(1, &d->texid);
-			glBindTexture(GL_TEXTURE_2D, d->texid);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-
-			d->tex = kosmos::render::make_ref(d->texid);
+			d->texid = 0;
+			d->tex = 0;
 		}
 
 		void free_cache(cache_t *d)
@@ -147,6 +139,18 @@ namespace ccgui
 								
 								wp += 4;
 							}
+						}
+
+						if (!c->tex)
+						{
+							glGenTextures(1, &c->texid);
+							glBindTexture(GL_TEXTURE_2D, c->texid);
+							glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+							glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+							glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+							glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+							glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, c->width, c->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+							c->tex = kosmos::render::make_ref(c->texid);
 						}
 
 						glBindTexture(GL_TEXTURE_2D, d->cache->texid);
